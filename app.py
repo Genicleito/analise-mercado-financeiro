@@ -1,6 +1,11 @@
-import os
-os.system("pip install -r requirements.txt")
 import streamlit as st
+import os
+
+@st.cache_data
+def install_requirements():
+    os.system("pip install -r requirements.txt")
+install_requirements()
+
 import pandas as pd
 import requests
 import plotly.graph_objects as go
