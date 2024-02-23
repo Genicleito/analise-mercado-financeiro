@@ -2,4 +2,4 @@ URL_LIB = 'https://raw.githubusercontent.com/Genicleito/market_trading_analysis/
 
 # Paths
 LIB_PATH = 'lib/technical_analysis.py'
-READ_MARKET_DATA_PATH = 'data/raw/hist_market_trading_yfinance.csv'
+READ_MARKET_DATA_PATH = 'data/raw/hist_market_trading_yfinance.csv.zip'
