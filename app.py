@@ -27,7 +27,6 @@ with st.status('Loading data...'):
     st.write(f'_**{datetime.datetime.now()}** Lendo dados... Aguarde alguns segundos..._')
     df, _ = load_data()
     st.write(f'{datetime.datetime.now()} Dados lidos com sucesso: {df.shape[0]} linhas')
-    data_loaded = True
 
 if df.shape[0] > 0:
     option = st.selectbox(
