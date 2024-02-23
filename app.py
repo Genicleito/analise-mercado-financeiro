@@ -22,14 +22,14 @@ from lib import technical_analysis
 def load_data():
     return technical_analysis.daily_analysis_yfinance()
 
-data_loaded = False
+df = pd.DataFrame()
 with st.status('Loading data...'):
     st.write(f'_**{datetime.datetime.now()}** Lendo dados... Aguarde alguns segundos..._')
     df, _ = load_data()
     st.write(f'{datetime.datetime.now()} Dados lidos com sucesso: {df.shape[0]} linhas')
     data_loaded = True
 
-if data_loaded:
+if df.shape[0] > 0:
     option = st.selectbox(
         'Selecione um código de ativo:',
         options=sorted(df['ticker'].unique())
