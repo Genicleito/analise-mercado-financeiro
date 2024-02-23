@@ -10,9 +10,10 @@ import pandas as pd
 import requests
 import plotly.graph_objects as go
 import datetime
+from lib import models
 
-lib_path = 'lib/technical_analysis.py' # 'lib/technical_analysis.py'
-url_lib = 'https://raw.githubusercontent.com/Genicleito/market_trading_analysis/master/lib/technical_analysis/__init__.py'
+lib_path = models.LIB_PATH
+url_lib = models.URL_LIB
 with open(lib_path, 'wb+') as f:
     f.write(requests.get(url_lib).text.encode('utf-8'))
 
@@ -20,13 +21,15 @@ from lib import technical_analysis
 
 @st.cache_resource
 def load_data():
-    return technical_analysis.daily_analysis_yfinance()
+    # return technical_analysis.daily_analysis_yfinance()
+    return pd.read_csv(models.READ_MARKET_DATA_PATH), None
 
 df = pd.DataFrame()
 with st.status('Loading data...'):
     st.write(f'_**{datetime.datetime.now()}** Lendo dados... Aguarde alguns segundos..._')
     df, _ = load_data()
     st.write(f'{datetime.datetime.now()} Dados lidos com sucesso: {df.shape[0]} linhas')
+
 
 if df.shape[0] > 0:
     option = st.selectbox(
