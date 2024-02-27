@@ -135,7 +135,9 @@ if ticker_sb:
     st.dataframe(
         df[
             (df['tend_alta_medias'] == True) & (df['date'] == df['date'].max())
-        ].sort_values('date', ascending=False).reset_index(drop=True),
+        ].drop(
+            ['buy', 'sell', 'tend_alta_medias'], axis=1
+        ).sort_values('date', ascending=False).reset_index(drop=True),
         width=900
     )
 
