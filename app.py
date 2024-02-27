@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 
 @st.cache_data
@@ -10,14 +11,33 @@ import pandas as pd
 import requests
 import plotly.graph_objects as go
 import datetime
-from lib import models
+from lib import (
+    models, utils
+)
 
 lib_path = models.LIB_PATH
 url_lib = models.URL_LIB
 with open(lib_path, 'wb+') as f:
     f.write(requests.get(url_lib).text.encode('utf-8'))
 
+# Importa biblioteca adicional obtida do repositório do github
 from lib import technical_analysis
+
+def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
+    # Prepare data
+    data = df.query(f"ticker == '{ticker}'").sort_values('date').copy()
+
+    # Unidimensional
+    X = data['close'].to_numpy()
+    # Considera todos os dados caso nenhum período tenha sido selecionado
+    if not periods: periods = len(X)
+    X = X[-periods:]
+
+    print(f"ticker = {ticker}\nperiods = {data['date'].iloc[-periods]} <-> {data['date'].iloc[-1]}")
+    p_value_alta, tend_alta = utils.cox_stuart_test(X, p=models.P, trend_type='i')
+    p_value_baixa, tend_baixa = utils.cox_stuart_test(X, p=models.P, trend_type='d')
+
+    return [(p_value_alta, tend_alta), (p_value_baixa, tend_baixa)]
 
 @st.cache_resource
 def load_data():
@@ -30,28 +50,47 @@ with st.status('Loading data...'):
     df, _ = load_data()
     st.write(f'{datetime.datetime.now()} Dados lidos com sucesso: {df.shape[0]} linhas')
 
-
 if df.shape[0] > 0:
-    option = st.selectbox(
+    ticker_sb = st.selectbox(
         'Selecione um código de ativo:',
         options=sorted(df['ticker'].unique())
     )
 
-data = df[(df['ticker'] == 'PETR4')]  # & (df['date'].dt.date >= (datetime.datetime.today() - datetime.timedelta(days=20)).date())]
-fig = go.Figure(
-    data=[
-        go.Candlestick(
-            x=data['date'],
-            open=data['open'],
-            high=data['high'],
-            low=data['low'],
-            close=data['close']
-        )
-    ]
+if ticker_sb:
+    data = df[(df['ticker'] == 'GOLL4')]  # & (df['date'].dt.date >= (datetime.datetime.today() - datetime.timedelta(days=20)).date())]
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=data['date'],
+                open=data['open'],
+                high=data['high'],
+                low=data['low'],
+                close=data['close']
+            )
+        ]
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+components.html(
+    html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV')
+    # height=600
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.markdown(f"### Teste de Tendência")
 
+if ticker_sb:
+    r = run_cox_stuart_test(df, ticker=ticker_sb, periods=models.PERIODS_H_TEST)
+
+    if r[0][1]:
+        st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]}]`!")
+    else:
+        st.write(f"Não há tendência sgnificativa de alta `[p-value = {r[0][0]}]`!")
+
+    if r[1][1]:
+        st.write(f"Há tendência sgnificativa de baixa `[p-value = {r[1][0]}]`!")
+    else:
+        st.write(f"Não há tendência sgnificativa de baixa `[p-value = {r[1][0]}]`!")
 
 ################# Adicionando textos e anotações ##############
 # import plotly.graph_objects as go
