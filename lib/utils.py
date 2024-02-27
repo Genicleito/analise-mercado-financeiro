@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import scipy
 import datetime
-import stats
 
 def now(as_date_text=False):
     if as_date_text:
