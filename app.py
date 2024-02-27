@@ -86,7 +86,7 @@ if df.shape[0] > 0:
 
 if ticker_sb:
     st.markdown(f"# Teste de Tendência")
-    r = run_cox_stuart_test(df, ticker=ticker_sb, periods=periods_sb is periods_sb else models.PERIODS_H_TEST)
+    r = run_cox_stuart_test(df, ticker=ticker_sb, periods=periods_sb if periods_sb else models.PERIODS_H_TEST)
 
     if r[0][1]:
         st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}]`!")
