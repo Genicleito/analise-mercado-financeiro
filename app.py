@@ -42,15 +42,15 @@ def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
 @st.cache_resource
 def load_data():
     # return technical_analysis.daily_analysis_yfinance()
-    return pd.read_csv(models.READ_MARKET_DATA_PATH)
-
-st.write(f"debug: {pd.read_csv('https://query1.finance.yahoo.com/v7/finance/download/PETR4.SA?period1=946695600&period2=1709052941&interval=1d&events=history').shape}")
+    # return pd.read_csv(models.READ_MARKET_DATA_PATH)
+    return utils.get_market_data()
 
 df = pd.DataFrame()
 with st.status('Loading data...'):
-    st.write(f'_**{datetime.datetime.now()}** Lendo dados... Aguarde alguns segundos..._')
+    ts = datetime.datetime.now()
+    st.write(f"_{ts.strftime('%Y-%m-%d %H:%M:%S')} Lendo dados... Aguarde alguns instantes..._")
     df = load_data()
-    st.write(f'{datetime.datetime.now()} Dados lidos com sucesso: {df.shape[0]} linhas')
+    st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
 
 if df.shape[0] > 0:
     # Criar duas colunas: uma para o ticker e outra para periodos
@@ -91,14 +91,14 @@ if ticker_sb:
     r = run_cox_stuart_test(df, ticker=ticker_sb, periods=periods_sb if periods_sb else models.PERIODS_H_TEST)
 
     if r[0][1]:
-        st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}]`!")
+        st.write(f"Há tendência significativa de alta: [`p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}`]")
     else:
-        st.write(f"Não há tendência sgnificativa de alta `[p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}]`!")
+        st.write(f"Não há tendência significativa de alta: [`p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}`]")
 
     if r[1][1]:
-        st.write(f"Há tendência sgnificativa de baixa `[p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}]`!")
+        st.write(f"Há tendência significativa de baixa: [`p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}`]")
     else:
-        st.write(f"Não há tendência sgnificativa de baixa `[p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}]`!")
+        st.write(f"Não há tendência significativa de baixa: [`p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}`]!")
 
 components.html(
     html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV'),
