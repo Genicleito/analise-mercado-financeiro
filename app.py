@@ -44,6 +44,8 @@ def load_data():
     # return technical_analysis.daily_analysis_yfinance()
     return pd.read_csv(models.READ_MARKET_DATA_PATH)
 
+st.write(f"debug: {pd.read_csv('https://query1.finance.yahoo.com/v7/finance/download/PETR4.SA?period1=946695600&period2=1709052941&interval=1d&events=history').shape}")
+
 df = pd.DataFrame()
 with st.status('Loading data...'):
     st.write(f'_**{datetime.datetime.now()}** Lendo dados... Aguarde alguns segundos..._')
