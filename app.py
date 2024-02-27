@@ -108,7 +108,7 @@ components.html(
 )
 
 if ticker_sb:
-    st.markdown(f"# Teste de Tendência")
+    st.markdown(f"# Teste de Tendência (*Cox-Stuart Test*)")
     periods = periods_sb if periods_sb else models.PERIODS_H_TEST
     r = run_cox_stuart_test(df, ticker=ticker_sb, periods=periods)
 
