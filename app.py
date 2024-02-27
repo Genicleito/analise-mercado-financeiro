@@ -65,6 +65,8 @@ with st.status('Loading data...'):
     st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
 
 if df.shape[0] > 0:
+    st.write(f"Dados{' [*offline*]' if not online_data else ''} atualizados até `{df['date'].max()}`")
+
     st.write(f"# Input de informações")
     # Criar duas colunas: uma para o ticker e outra para periodos
     col_ticker, col_periods = st.columns(2, gap='medium')
@@ -83,14 +85,12 @@ if df.shape[0] > 0:
         )
 
     if ticker_sb:
-        st.write(f"Dados{' [*offline*]' if not online_data else ''} de *{ticker_sb}* atualizados até `{df_ticker['date'].max()}`")
-
-        st.write(f"### Dados de *{ticker_sb}* na data `{df_ticker['date'].max()}`:")
+        st.write(f"#### Dados de *{ticker_sb}* na data *{df_ticker['date'].max()}*:")
         st.dataframe(
             df_ticker[
                 df_ticker['date'] == df_ticker['date'].max()
             ].reset_index(drop=True).round(4).T.rename(columns={0: 'info'}),
-            width=600
+            width=400
         )
 
 # if ticker_sb:
