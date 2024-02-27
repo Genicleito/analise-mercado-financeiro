@@ -52,10 +52,18 @@ with st.status('Loading data...'):
 
 if df.shape[0] > 0:
     # Criar duas colunas: uma para o ticker e outra para periodos
-    ticker_sb = st.selectbox(
-        'Selecione um código de ativo:',
-        options=[''] + sorted(df['ticker'].unique())
-    )
+    col_ticker, col_periods = st.columns(2, gap='medium')
+    with col_ticker:
+        ticker_sb = st.selectbox(
+            '#### Selecione um código de ativo:',
+            options=[''] + sorted(df['ticker'].unique())
+        )
+    
+    with col_periods:
+        periods_sb = st.selectbox(
+            '#### Selecione o período para filtrar dados no teste de hipótese:',
+            options=[21, 9, 72, 200]
+        )
 
     if ticker_sb:
         st.write(f"Dados para {ticker_sb} atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
@@ -77,8 +85,8 @@ if df.shape[0] > 0:
 #     st.plotly_chart(fig, use_container_width=True)
 
 if ticker_sb:
-    st.markdown(f"### Teste de Tendência")
-    r = run_cox_stuart_test(df, ticker=ticker_sb, periods=models.PERIODS_H_TEST)
+    st.markdown(f"# Teste de Tendência")
+    r = run_cox_stuart_test(df, ticker=ticker_sb, periods=periods_sb is periods_sb else models.PERIODS_H_TEST)
 
     if r[0][1]:
         st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}]`!")

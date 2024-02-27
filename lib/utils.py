@@ -8,7 +8,7 @@ def now(as_date_text=False):
         return datetime.datetime.now().strftime('%Y-%m-%d')
     return datetime.datetime.now()
 
-def cox_stuart_test(X, p=0.05, trend_type='i', debug=True):
+def cox_stuart_test(X, p=0.05, trend_type='d', debug=True):
     """Função pararealizar o teste de hipótese de Cox-Stuart.
 
     Parameters:
@@ -18,42 +18,27 @@ def cox_stuart_test(X, p=0.05, trend_type='i', debug=True):
             `'i'` *increasing trend*.
     """
     ts = now()
-    # Divide os dados (analisa se o conjunto de dados tem tamanho par ou ímpar)
-    if len(X) % 2 == 0:
-        # threshold = (X[(len(X) // 2) - 1] + X[len(X) // 2]) / 2
-        x1 = X[ :len(X) // 2 ]
-        x2 = X[(len(X) // 2): ]
-    else:
-        # threshold = X[len(X) // 2]
-        x1 = X[ :len(X) // 2]
-        x2 = X[(len(X) // 2) + 1: ]
+    x = X[:]
+    if len(x) % 2 == 1:
+        id_del = len(x) // 2
+        x = np.delete(x, id_del)
 
-    # Difference
-    difference = x1 - x2
+    half = len(x) // 2
 
-    # Signal
-    signs = np.sign(difference)
-    # # Signs not equal to 0
-    # signs = signs[signs != 0]
+    x1 = x[np.arange(0, half, dtype=int)]
+    x2 = x[np.arange(half, len(x), dtype=int)]
 
-    # Increase and decrease values
-    pos = signs[signs > 0]
-    neg = signs[signs < 0]
+    n = np.sum((x2 - x1) != 0)
+    t = np.sum(x1 < x2)
 
-    # Length
-    n = len(pos) + len(neg)
-
-    if trend_type == 'd':
-        x = len(neg)
-        p_value = scipy.stats.binom.cdf(x, n, p)
-        if debug: print(f"x = {x}\nn = {n}\np = {p}")
-        if debug: print(f"P-Value: {p_value}\n\t{'Não há tendência sgnificativa de baixa!' if p_value >= p else 'Há tendência significativa de baixa!'}")
-    else: # 'i'
-        x = len(pos)
-        p_value = scipy.stats.binom.cdf(x, n, p)
-        if debug: print(f"x = {x}\nn = {n}\np = {p}")
-        if debug: print(f"P-Value: {p_value}\n\t{'Não há tendência sgnificativa de alta!' if p_value >= p else 'Há tendência significativa de alta!'}")
+    if trend_type == 'i':
+        p_value = 1 - scipy.stats.binom.cdf(t - 1, n, p)
+        if debug: print(f"P = {p} | P-Value = {p_value}")
+        if debug: print(f"\t{'Não há tendência sgnificativa de baixa!' if p_value >= p else 'Há tendência significativa de baixa!'}")
+    else: # elif trend_type == "d"
+        p_value = scipy.stats.binom.cdf(t, n, p)
+        if debug: print(f"P = {p} | P-Value = {p_value}")
+        if debug: print(f"\t{'Não há tendência sgnificativa de alta!' if p_value >= p else 'Há tendência significativa de alta!'}")
     
     if debug: print(f"Tempo de execução: {now() - ts}")
     return p_value, p_value < p
-
