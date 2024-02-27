@@ -43,12 +43,16 @@ def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
 def load_data():
     # return technical_analysis.daily_analysis_yfinance()
     # return pd.read_csv(models.READ_MARKET_DATA_PATH)
-    df = utils.get_market_data()
-    if df.shape[0] > 0:
-        print(f"[load_data()] Dados foram baixados!")
-        return df
-    print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
-    return pd.read_csv(models.READ_MARKET_DATA_PATH)
+    try:
+        df = utils.get_market_data()
+    except:
+        print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+    
+    if df.shape[0] == 0:
+        print(f'Dados vazios, lendo dados salvos no repositório.')
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+    return df
     
 
 df = pd.DataFrame()
