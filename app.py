@@ -85,6 +85,14 @@ if df.shape[0] > 0:
     if ticker_sb:
         st.write(f"Dados{' [*offline*]' if not online_data else ''} de *{ticker_sb}* atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
 
+        st.write(f"### Dados de *{ticker_sb}* na data `{['date'].max()}`:")
+        st.dataframe(
+            df_ticker[
+                df_ticker['date'] == df_ticker['date'].max()
+            ].reset_index(drop=True).round(4).T.rename(columns={0: 'info'}),
+            width=600
+        )
+
 # if ticker_sb:
 #     data = df[(df['ticker'] == ticker_sb)]  # & (df['date'].dt.date >= (datetime.datetime.today() - datetime.timedelta(days=20)).date())]
 #     fig = go.Figure(
@@ -123,14 +131,7 @@ if ticker_sb:
     else:
         st.write(f"* **Não há tendência significativa de baixa 😐:** \n\t * **p-value** = {r[1][0]} \n\t * **periods** = {periods}")
 
-    st.dataframe(
-        df_ticker[
-            df_ticker['date'] == df_ticker['date'].max()
-        ].reset_index(drop=True).round(4).T.rename(columns={0: 'info'}),
-        width=600
-    )
-
-    st.write(f"#### Ações com tendência de alta por cruzamento de médias na data mais recente [`{df['date'].max()}`]")
+    st.write(f"### Ações com tendência de alta por cruzamento de médias na data mais recente [`{df['date'].max()}`]")
     st.dataframe(
         df[
             (df['tend_alta_medias'] == True) & (df['date'] == df['date'].max())
