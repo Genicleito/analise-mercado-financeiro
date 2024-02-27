@@ -118,7 +118,7 @@ if ticker_sb:
     if r[1][1]:
         st.write(f"* **Há tendência significativa de baixa 📉:** \n\t * **p-value** = {r[1][0]} \n\t * **periods** = {periods}")
     else:
-        st.write(f"* **Não há tendência significativa de baixa 😐:** \n\t * **p-value** = {r[1][0]} \n\t * **periods** = {periods}!")
+        st.write(f"* **Não há tendência significativa de baixa 😐:** \n\t * **p-value** = {r[1][0]} \n\t * **periods** = {periods}")
 
     st.dataframe(
         df_ticker[
