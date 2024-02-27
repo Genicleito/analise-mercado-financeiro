@@ -43,8 +43,10 @@ def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
 def load_data():
     # return technical_analysis.daily_analysis_yfinance()
     # return pd.read_csv(models.READ_MARKET_DATA_PATH)
+    online_data = False
     try:
         df = utils.get_market_data()
+        online_data = True
     except:
         print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
         df = pd.read_csv(models.READ_MARKET_DATA_PATH)
@@ -52,14 +54,14 @@ def load_data():
     if df.shape[0] == 0:
         print(f'Dados vazios, lendo dados salvos no repositório.')
         df = pd.read_csv(models.READ_MARKET_DATA_PATH)
-    return df
+    return df, online_data
     
 
 df = pd.DataFrame()
 with st.status('Loading data...'):
     ts = datetime.datetime.now()
     st.write(f"_{ts.strftime('%Y-%m-%d %H:%M:%S')} Lendo dados... Aguarde alguns instantes..._")
-    df = load_data()
+    df, online_data = load_data()
     st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
 
 if df.shape[0] > 0:
@@ -80,7 +82,7 @@ if df.shape[0] > 0:
         )
 
     if ticker_sb:
-        st.write(f"Dados da *{ticker_sb}* atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
+        st.write(f"Dados{' [offline]' if online_data else ''} de *{ticker_sb}* atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
 
 # if ticker_sb:
 #     data = df[(df['ticker'] == ticker_sb)]  # & (df['date'].dt.date >= (datetime.datetime.today() - datetime.timedelta(days=20)).date())]
