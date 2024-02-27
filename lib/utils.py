@@ -15,6 +15,8 @@ TICKERS = set([
     'ITSA4', 'PTBL3', 'ENJU3', 'AERI3', 'GMAT3', 'CRFB3', 'RAPT4', 'CXSE3', 'BHIA3', 'PETR3', 'ITUB3', 'OIBR4',
 ])
 
+DEFAULT_YAHOO_COLUMNS = ['date', 'ticker', 'open', 'high', 'low', 'close', 'adj_close', 'volume']
+
 def now(as_date_text=False):
     if as_date_text:
         return datetime.datetime.now().strftime('%Y-%m-%d')
@@ -64,10 +66,12 @@ def get_market_data():
             tmp = tmp[tmp['ticker'] == code].sort_values(by=['date'])
             for p in periods:
                 # call ema function
-                tmp[f'close_ema{p}'] = tmp['close'].ewm(span=p, min_periods=p, adjust=False).mean().round(2)
+                # tmp[f'close_ema{p}'] = tmp['close'].ewm(span=p, min_periods=p, adjust=False).mean().round(2)
+                tmp[f'close_ema{p}'] = tmp['close'].rolling(window=p).mean().round(2)
                 if p == 20:
-                    # call ema function
-                    tmp[f'volume_ema{p}'] = tmp['volume'].ewm(span=p, min_periods=p, adjust=False).mean().round(0).astype(int, errors='ignore')
+                    # EMA volume 20 periods
+                    # tmp[f'volume_ema{p}'] = tmp['volume'].ewm(span=p, min_periods=p, adjust=False).mean().round(0).astype(int, errors='ignore')
+                    tmp[f'volume_ema{p}'] = tmp['volume'].rolling(window=p).mean().round(0).astype(int, errors='ignore')
             dfs.append(tmp)
         return pd.concat(dfs, ignore_index=True)
 
@@ -107,14 +111,14 @@ def get_market_data():
             url = create_yahoo_download_query(code=ticker)
             try:
                 tmp = pd.read_csv(url).assign(ticker=ticker)
-                tmp = tmp.rename(columns={x: x.lower().replace(' ', '_') for x in tmp.columns}) # [_TICKERS_COLUMNS]
+                tmp = tmp.rename(columns={x: x.lower().replace(' ', '_') for x in tmp.columns})[DEFAULT_YAHOO_COLUMNS]
                 tmp = tmp[tmp != 'null'].dropna()
                 tmp = tmp.assign(
                     pct=(tmp['close'] - tmp['open']) / tmp['open'] * 100,
                     pct_ant=(tmp['close'] - tmp['close'].shift(1)) / tmp['close'].shift(1) * 100
                 )
-                # for col in _TICKERS_COLUMNS:
-                #     tmp[col] = tmp[col].astype(float, errors='ignore')
+                for col in DEFAULT_YAHOO_COLUMNS:
+                    tmp[col] = tmp[col].astype(float, errors='ignore')
                 for col in tmp.columns:
                     tmp[col] = tmp[col].astype(float, errors='ignore')
                 dfs.append(tmp)
@@ -135,25 +139,30 @@ def get_market_data():
             tmp['macd'] = macd(fast_ma=tmp['close_ema8'], slow_ma=tmp['close_ema20']).round(2)
             tmp['macd_signal'] = ema(serie=tmp['macd'], period=20)
             # tmp = get_signals(tmp)
+            tmp = tmp.assign(**{
+                'candle_crossing_ema20': candle_crossing_ema(tmp, period=20),
+                'crossing_8ema_x_20ema': np.where((tmp['close_ema8'] >= tmp['close_ema20']) & (tmp['close_ema8'].shift(1) < tmp['close_ema20'].shift(1)), 1, 0),
+                'crossing_8ema_x_72ema': np.where((tmp['close_ema8'] >= tmp['close_ema72']) & (tmp['close_ema8'].shift(1) < tmp['close_ema72'].shift(1)), 1, 0),
+                'crossing_20ema_x_72ema': np.where((tmp['close_ema20'] >= tmp['close_ema72']) & (tmp['close_ema20'].shift(1) < tmp['close_ema72'].shift(1)), 1, 0),
+                'trend_tomorrow': np.where((tmp['close'].shift(-1).notna()) & (tmp['close'] < tmp['close'].shift(-1)), 1, 0),
+                'prop_gain_8': (tmp['close'] - tmp['close'].shift(-8)) / tmp['close'],
+                'prop_gain_20': (tmp['close'] - tmp['close'].shift(-20)) / tmp['close'],
+                'prop_gain_72': (tmp['close'] - tmp['close'].shift(-72)) / tmp['close'],
+            })
             dfs.append(tmp)
             del(tmp)
     # Une os DataFrames
     df = pd.concat(dfs, ignore_index=True)
 
-    # Cria colunas de interesse
-    return df.assign(
+    # Cria colunas com base nas informações dos candles
+    df = df.assign(
         **{
-            'candle_crossing_ema20': candle_crossing_ema(df, period=20),
-            'crossing_8ema_x_20ema': np.where((df['close_ema8'] >= df['close_ema20']) & (df['close_ema8'].shift(1) < df['close_ema20'].shift(1)), 1, 0),
-            'crossing_8ema_x_72ema': np.where((df['close_ema8'] >= df['close_ema72']) & (df['close_ema8'].shift(1) < df['close_ema72'].shift(1)), 1, 0),
-            'crossing_20ema_x_72ema': np.where((df['close_ema20'] >= df['close_ema72']) & (df['close_ema20'].shift(1) < df['close_ema72'].shift(1)), 1, 0),
-            'trend_tomorrow': np.where((df['close'].shift(-1).notna()) & (df['close'] < df['close'].shift(-1)), 1, 0),
             'volume_to_average': (df['volume'] / df['volume_ema20']),
             'macd_to_average': (df['macd'] / df['macd_signal']),
             'candle_lose': df['high'] - df['close'],
             'candle_gain': df['close'] - df['low'],
             'candle_length': df['high'] - df['low'],
-            'price_var': df['close'] - df['open'],
+            'candle_body': df['close'] - df['open'],
             'candle_prop_close': 1 - ((df['high'] - df['low']) / df['close']),
             'price_prop_close': 1 - ((df['close'] - df['open']) / df['close']),
             'lower_shadow': (np.where(df['open'] < df['close'], df['open'], df['close']) - df['low']) / (df['high'] - df['low']),
@@ -161,8 +170,13 @@ def get_market_data():
             'ema8_over_20': df['close_ema8'] - df['close_ema20'],
             'ema8_over_72': df['close_ema8'] - df['close_ema72'],
             'ema20_over_72': df['close_ema20'] - df['close_ema72'],
-            'prop_gain_8': (df['close'].shift(-8) - df['close']) * df['close'],
-            'prop_gain_20': (df['close'].shift(-20) - df['close']) * df['close'],
-            'prop_gain_72': (df['close'].shift(-72) - df['close']) * df['close'],
         }
     )
+    # Cria coluna(s) que depende(m) das criadas anteriormente
+    return df.assign(**{
+        'tend_alta_medias': (
+            ((df['ema8_over_20'] > 0) & (df['ema8_over_20'].shift(1) <= 0))
+                | ((df['ema8_over_72'] > 0) & (df['ema8_over_72'].shift(1) <= 0))
+                | ((df['ema20_over_72'] > 0) & (df['ema20_over_72'].shift(1) <= 0))
+        )
+    })
