@@ -51,6 +51,7 @@ with st.status('Loading data...'):
     st.write(f'{datetime.datetime.now()} Dados lidos com sucesso: {df.shape[0]} linhas')
 
 if df.shape[0] > 0:
+    # Criar duas colunas: uma para o ticker e outra para periodos
     ticker_sb = st.selectbox(
         'Selecione um código de ativo:',
         options=[''] + sorted(df['ticker'].unique())
@@ -80,19 +81,19 @@ if ticker_sb:
     r = run_cox_stuart_test(df, ticker=ticker_sb, periods=models.PERIODS_H_TEST)
 
     if r[0][1]:
-        st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]} | {models.PERIODS_H_TEST} periods]`!")
+        st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}]`!")
     else:
-        st.write(f"Não há tendência sgnificativa de alta `[p-value = {r[0][0]} | {models.PERIODS_H_TEST}]`!")
+        st.write(f"Não há tendência sgnificativa de alta `[p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}]`!")
 
     if r[1][1]:
-        st.write(f"Há tendência sgnificativa de baixa `[p-value = {r[1][0]} | {models.PERIODS_H_TEST}]`!")
+        st.write(f"Há tendência sgnificativa de baixa `[p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}]`!")
     else:
-        st.write(f"Não há tendência sgnificativa de baixa `[p-value = {r[1][0]} | {models.PERIODS_H_TEST}]`!")
+        st.write(f"Não há tendência sgnificativa de baixa `[p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}]`!")
 
 components.html(
     html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV'),
     height=900,
-    width=900
+    width=1200
 )
 
 ################# Adicionando textos e anotações ##############
