@@ -83,9 +83,9 @@ if df.shape[0] > 0:
         )
 
     if ticker_sb:
-        st.write(f"Dados{' [*offline*]' if not online_data else ''} de *{ticker_sb}* atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
+        st.write(f"Dados{' [*offline*]' if not online_data else ''} de *{ticker_sb}* atualizados até `{df_ticker['date'].max()}`")
 
-        st.write(f"### Dados de *{ticker_sb}* na data `{['date'].max()}`:")
+        st.write(f"### Dados de *{ticker_sb}* na data `{df_ticker['date'].max()}`:")
         st.dataframe(
             df_ticker[
                 df_ticker['date'] == df_ticker['date'].max()
