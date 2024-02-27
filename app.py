@@ -49,7 +49,9 @@ def load_data():
         print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
         df = pd.read_csv(models.READ_MARKET_DATA_PATH)
     
-    if df.shape[0] == 0: df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+    if df.shape[0] == 0:
+        print(f'Dados vazios, lendo dados salvos no repositório.')
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
     return df
     
 
