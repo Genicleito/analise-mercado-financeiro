@@ -65,6 +65,7 @@ with st.status('Loading data...'):
     st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
 
 if df.shape[0] > 0:
+    st.write(f"# Input de informações")
     # Criar duas colunas: uma para o ticker e outra para periodos
     col_ticker, col_periods = st.columns(2, gap='medium')
     with col_ticker:
@@ -100,7 +101,7 @@ if df.shape[0] > 0:
 
 #     st.plotly_chart(fig, use_container_width=True)
 
-st.write(f"# Gráfico com visualização da série do ativo no TradingView")
+st.write(f"### Gráfico com visualização da série do ativo no TradingView")
 components.html(
     html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV'),
     height=400,
