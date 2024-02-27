@@ -64,7 +64,7 @@ if df.shape[0] > 0:
     with col_periods:
         periods_sb = st.selectbox(
             '*Selecione o período para teste de hipótese:*',
-            options=[21, 9, 72, 200]
+            options=[21, 9, 45, 72, 200]
         )
 
     if ticker_sb:
@@ -88,17 +88,18 @@ if df.shape[0] > 0:
 
 if ticker_sb:
     st.markdown(f"# Teste de Tendência")
-    r = run_cox_stuart_test(df, ticker=ticker_sb, periods=periods_sb if periods_sb else models.PERIODS_H_TEST)
+    periods = periods_sb if periods_sb else models.PERIODS_H_TEST
+    r = run_cox_stuart_test(df, ticker=ticker_sb, periods=periods)
 
     if r[0][1]:
-        st.write(f"Há tendência significativa de alta: [`p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}`]")
+        st.write(f"Há tendência significativa de alta: [`p-value = {r[0][0]} | periods = {periods}`]")
     else:
-        st.write(f"Não há tendência significativa de alta: [`p-value = {r[0][0]} | periods = {models.PERIODS_H_TEST}`]")
+        st.write(f"Não há tendência significativa de alta: [`p-value = {r[0][0]} | periods = {periods}`]")
 
     if r[1][1]:
-        st.write(f"Há tendência significativa de baixa: [`p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}`]")
+        st.write(f"Há tendência significativa de baixa: [`p-value = {r[1][0]} | periods = {periods}`]")
     else:
-        st.write(f"Não há tendência significativa de baixa: [`p-value = {r[1][0]} | periods = {models.PERIODS_H_TEST}`]!")
+        st.write(f"Não há tendência significativa de baixa: [`p-value = {r[1][0]} | periods = {periods}`]!")
 
 components.html(
     html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV'),
