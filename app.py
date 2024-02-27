@@ -68,7 +68,7 @@ if df.shape[0] > 0:
         )
 
     if ticker_sb:
-        st.write(f"Dados para {ticker_sb} atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
+        st.write(f"Dados da *{ticker_sb}* atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
 
 # if ticker_sb:
 #     data = df[(df['ticker'] == ticker_sb)]  # & (df['date'].dt.date >= (datetime.datetime.today() - datetime.timedelta(days=20)).date())]
