@@ -4,7 +4,7 @@ import requests, json, datetime, math
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from IPython import display
+# from IPython import display
 import logging
 import time
 import os
@@ -37,24 +37,24 @@ def updated_period2_to_now():
     return int(datetime.datetime(year=now.year, month=now.month, day=now.day, hour=now.hour, minute=now.minute, second=now.second, microsecond=now.microsecond).timestamp())
 
 _CODES = [
-    'CEAB3', 'OIBR3', 'EMBR3', 'VALE3', 'GOLL4', 'COGN3', 'IRBR3', 'ABEV3', 'AZUL4', 'VULC3', 'SUZB3', 'ALSO3', 'QUAL3', 'CXSE3',
-    'BMGB4', 'ECOR3', 'TOTS3', 'ITUB4', 'LREN3', 'GGBR4', 'USIM5', 'MRFG3', 'RENT3', 'MOVI3', 'VIVA3', 'ARZZ3', 'ETER3', 'PCAR3',
+    'CEAB3', 'OIBR3', 'EMBR3', 'VALE3', 'GOLL4', 'COGN3', 'IRBR3', 'ABEV3', 'BBDC4', 'VULC3', 'SUZB3', 'AZUL4', 'QUAL3', 'SEER3',
+    'BMGB4', 'ECOR3', 'TOTS3', 'ITUB4', 'LREN3', 'GGBR4', 'USIM5', 'MRFG3', 'RENT3', 'MOVI3', 'VIVA3', 'ARZZ3', 'ETER3',
     'BRKM5', 'PFRM3', 'SOMA3', 'ABCB4', 'AMAR3', 'ANIM3', 'BPAN4', 'BRPR3', 'PETR4', 'SAPR3', 'MEAL3', 'TEND3', 'CIEL3', 'MILS3',
     'CCRO3', 'BEEF3', 'MGLU3', 'BBAS3', 'WEGE3', 'CYRE3', 'JHSF3', 'KLBN11', 'SHOW3', 'MRVE3', 'CSAN3', 'NTCO3', 'MDNE3',
     'SAPR11', 'JBSS3', 'BRFS3', 'CSNA3', 'ELET3', 'CMIG4', 'PDGR3', 'LPSB3', 'PRNR3', 'EZTC3', 'ENAT3', 'DMVF3', 'GUAR3',
     'SBSP3', 'RANI3', 'LWSA3', 'SAPR4', 'CAML3', 'GRND3', 'AGRO3', 'CRFB3', 'LAVV3', 'PGMN3', 'SMTO3', 'MYPK3', 'POMO4', 'STBP3', 'PETZ3',
-    'ITSA4', 'PTBL3', 'ENJU3', 'AERI3', 'GMAT3', 'CRFB3', 'RAPT4', 'CXSE3', 'BHIA3', 'ITSA4', 'VBBR3'
+    'ITSA4', 'PTBL3', 'ENJU3', 'AERI3', 'GMAT3', 'CRFB3', 'RAPT4', 'CXSE3', 'BHIA3'
 ]
 
 another_codes = [
     'CIEL3', 'ENAT3', 'MMXM11', 'SHOW3', 'GUAR3', 'BPAN4', 'MYPK3', 'ARZZ3', 'VULC3', 'ESTR4', 'LWSA3', 'EZTC3', 'BBAS3', 'VIVA3', 'BMGB4',
-    'BRFS3', 'TOTS3', 'ALSO3', 'POMO4', 'MRVE3', 'MDIA3', 'PDGR3', 'BRCO11', 'SAPR3', 'SEER3', 'PETZ3', 'LAVV3', 'CAML3', 'ABCB4', 'LLIS3',
-    'IRBR3', 'BRML3', 'SLBG34', 'STBP3', 'SMTO3', 'ITSA4', 'RENT3', 'CEAB3', 'VALE3', 'ELET3', 'MGLU3', 'GOLL4', 'MEAL3', 'UGPA3', 'ANIM3',
-    'WIZS3', 'SBSP3', 'CSNA3', 'DMVF3', 'OIBR3', 'BRKM5', 'CRFB3', 'PTBL3', 'EMBR3', 'JHSF3', 'CYRE3', 'QUAL3', 'SUZB3', 'AGRO3', 'SAPR4',
-    'ECOR3', 'GRND3', 'ETER3', 'SOMA3', 'USIM5', 'BKBR3', 'ITUB4', 'BRDT3', 'COGN3', 'AZUL4', 'VIFI11', 'DMMO3', 'TRNT11', 'CMIG4', 'CSAN3',
-    'VIIA3', 'PETR4', 'PLPL3', 'RAPT4', 'SANB3', 'NTCO3', 'LREN3', 'JBSS3', 'AMAR3', 'LAME4', 'GGBR4', 'MILS3', 'PRNR3', 'RANI3', 'PFRM3',
+    'BRFS3', 'TOTS3', 'POMO4', 'MRVE3', 'MDIA3', 'PDGR3', 'BRCO11', 'SAPR3', 'SEER3', 'PETZ3', 'LAVV3', 'CAML3', 'ABCB4',
+    'IRBR3', 'SLBG34', 'STBP3', 'SMTO3', 'ITSA4', 'RENT3', 'CEAB3', 'VALE3', 'ELET3', 'MGLU3', 'GOLL4', 'MEAL3', 'UGPA3', 'ANIM3',
+    'SBSP3', 'CSNA3', 'DMVF3', 'OIBR3', 'BRKM5', 'CRFB3', 'PTBL3', 'EMBR3', 'JHSF3', 'CYRE3', 'QUAL3', 'SUZB3', 'AGRO3', 'SAPR4',
+    'ECOR3', 'GRND3', 'ETER3', 'SOMA3', 'USIM5', 'ITUB4', 'COGN3', 'VIFI11', 'TRNT11', 'CMIG4', 'CSAN3',
+    'PETR4', 'PLPL3', 'RAPT4', 'SANB3', 'NTCO3', 'LREN3', 'JBSS3', 'AMAR3', 'GGBR4', 'MILS3', 'PRNR3', 'RANI3', 'PFRM3',
     'MDNE3', 'UNIP3', 'KLBN11', 'BRPR3', 'BBVJ11', 'MOVI3', 'SAPR11', 'ABEV3', 'BEEF3', 'GFSA3', 'WEGE3', 'MRFG3', 'PGMN3', 'LPSB3', 'BCFF11',
-    'TEND3', 'IGBR3', 'BIDI4', 'INEP3', 'ENJU3', 'AERI3', 'GMAT3'
+    'TEND3', 'IGBR3', 'INEP3', 'ENJU3', 'AERI3', 'GMAT3', 'LJQQ3'
 ]
 
 def get_main_codes():
@@ -727,15 +727,15 @@ def daily_analysis_yfinance(ticker=None, write_path=None, hist_path=_hist_path, 
     df = pd.DataFrame()
     hist = pd.DataFrame()
     print(f"Baixando dados para os últimos {qtd_days if qtd_days else '<todo o período>'} dias...")
-    if hist_path and os.path.exists(hist_path): 
-        hist = pd.read_csv(hist_path)[_TIMESERIE_DF_COLUMNS]
+    # if hist_path and os.path.exists(hist_path): 
+        # hist = pd.read_csv(hist_path)[_TIMESERIE_DF_COLUMNS]
     if qtd_days: period1 = int((datetime.datetime(year=now.year, month=now.month, day=now.day, hour=1) - datetime.timedelta(days=qtd_days)).timestamp())
 
     for ticker_code in tqdm(codes):
         tmp = get_yahoo_finance(code=ticker_code, interval_days=interval_days, period1=period1, period2=period2)
         if tmp.shape[0] > 1:
             tmp = tmp.rename(columns={'code': 'ticker'})
-            if qtd_days and os.path.exists(hist_path): tmp = tmp.append(hist[list(tmp.columns)][hist['ticker'] == ticker_code], ignore_index=True).drop_duplicates(subset=['date', 'ticker'])
+            if qtd_days and hist.shape[0] > 0: tmp = tmp.append(hist[list(tmp.columns)][hist['ticker'] == ticker_code], ignore_index=True).drop_duplicates(subset=['date', 'ticker'])
             tmp = create_ema(tmp.drop_duplicates(['date', 'ticker']))
             tmp = flag_volume(tmp)
             tmp['macd'] = macd(fast_ma=tmp['close_ema8'], slow_ma=tmp['close_ema20']).round(2)
@@ -746,7 +746,7 @@ def daily_analysis_yfinance(ticker=None, write_path=None, hist_path=_hist_path, 
             df = df.append(tmp, ignore_index=True)
     # # get and plot risk and return of main tickers codes
     # get_return_rate_and_risk(df[df['ticker'].isin(_CODES)], plot_risk_and_return=plot_risk_and_return, risk_return_period=risk_return_period)
-    display.display(df)
+
     # get recommendations
     df_recom = pd.DataFrame()
     if get_recom and not df.empty:
@@ -767,12 +767,30 @@ def daily_analysis_yfinance(ticker=None, write_path=None, hist_path=_hist_path, 
                 'crossing_8ema_x_20ema': np.where((df['close_ema8'] >= df['close_ema20']) & (df['close_ema8'].shift(1) < df['close_ema20'].shift(1)), 1, 0),
                 'crossing_8ema_x_72ema': np.where((df['close_ema8'] >= df['close_ema72']) & (df['close_ema8'].shift(1) < df['close_ema72'].shift(1)), 1, 0),
                 'crossing_20ema_x_72ema': np.where((df['close_ema20'] >= df['close_ema72']) & (df['close_ema20'].shift(1) < df['close_ema72'].shift(1)), 1, 0),
-                'trend_tomorrow': np.where((df['close'].shift(-1).notna()) & (df['close'] < df['close'].shift(-1)), 1, 0)
+                'trend_tomorrow': np.where((df['close'].shift(-1).notna()) & (df['close'] < df['close'].shift(-1)), 1, 0),
+                'candle_lose': df['high'] - df['close'],
+                'candle_gain': df['close'] - df['low'],
+                'volume_to_average': (df['volume'] / df['volume_ema20']),
+                'macd_to_average': (df['macd'] / df['macd_signal']),
+                'candle_length': df['high'] - df['low'],
+                'price_var': df['close'] - df['open'],
+                'candle_prop_close': 1 - ((df['high'] - df['low']) / df['close']),
+                'price_prop_close': 1 - ((df['close'] - df['open']) / df['close']),
+                'lower_shadow': (np.where(df['open'] < df['close'], df['open'], df['close']) - df['low']) / (df['high'] - df['low']),
+                'upper_shadow': (df['high'] - np.where(df['open'] > df['close'], df['open'], df['close'])) / (df['high'] - df['low']),
+                'ema8_over_20': df['close_ema8'] - df['close_ema20'],
+                'ema8_over_72': df['close_ema8'] - df['close_ema72'],
+                'ema20_over_72': df['close_ema20'] - df['close_ema72'],
+                'stop_loss_est': np.where(df['low'] < df['low'].shift(1).fillna(999999), df['low'], df['low'].shift(1)),
+                'stop_gain_est': df['close'] + (2 * ( df['close'] - np.where(df['low'] < df['low'].shift(1).fillna(999999), df['low'], df['low'].shift(1)) )), # close + (2 * (close - stop_loss))
+                'prop_gain_8': (df['close'].shift(-8) - df['close']) * df['close'],
+                'prop_gain_20': (df['close'].shift(-20) - df['close']) * df['close'],
+                'prop_gain_72': (df['close'].shift(-72) - df['close']) * df['close'],
             }
         )
         
         tmp = df_recom[df_recom['date'].dt.date == min(today.date(), df['date'].max())]
-        display.display(tmp)
+
         if tmp.shape[0] == 0:
             tmp = candle_trend(df[df['date'].dt.date == min(today.date(), df['date'].max())])[['date', 'buy', 'ticker', 'close', 'candle_trend']] #, 'candle_type']]
             print("Filtro por data atual:", tmp.shape)
@@ -782,11 +800,12 @@ def daily_analysis_yfinance(ticker=None, write_path=None, hist_path=_hist_path, 
         # tmp.to_html(f'reports/recommendations_yfinance_today.html')#, index=False)
         # print(f'Recommendations saved in: recommendations_yfinance.html')
         df_recom = tmp[tmp['buy'] == 1][['date', 'ticker', 'close', 'buy']]
-    if not df.empty and (hist.empty or hist[pd.to_datetime(hist['date']).dt.date == (today - datetime.timedelta(1)).date()].shape[0] == 0):
-        if not hist.empty: print(hist['date'].max())
-        tmp_hist = df[df['date'] != today.date()].sort_values(['ticker', 'date'])
-        print(f'A data {(today - datetime.timedelta(1)).date()} não está na base\nEscrevendo em {hist_path} sem a data {today.date()}: {tmp_hist.shape}')
-        tmp_hist.to_csv(hist_path, index=False)
+    # if not df.empty and (hist.empty or hist[pd.to_datetime(hist['date']).dt.date == (today - datetime.timedelta(1)).date()].shape[0] == 0):
+        # if not hist.empty: print(hist['date'].max())
+        # tmp_hist = df[df['date'] != today.date()].sort_values(['ticker', 'date'])
+        # print(f'A data {(today - datetime.timedelta(1)).date()} não está na base\nEscrevendo em {hist_path} sem a data {today.date()}: {tmp_hist.shape}')
+        # tmp_hist.to_csv(hist_path, index=False)
+    if hist_path: df[df['date'] != today.date()].sort_values(['date', 'ticker'], ascending=[False, True]).to_csv(hist_path, index=False)
     return df, df_recom
 
 def get_and_agg_stock_prices(write_path=None, by=['d'], tickers=set(_CODES + another_codes), days=0, start_date=None, source='b3'):

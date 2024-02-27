@@ -15,13 +15,13 @@ from lib import (
     models, utils
 )
 
-lib_path = models.LIB_PATH
-url_lib = models.URL_LIB
-with open(lib_path, 'wb+') as f:
-    f.write(requests.get(url_lib).text.encode('utf-8'))
+# lib_path = models.LIB_PATH
+# url_lib = models.URL_LIB
+# with open(lib_path, 'wb+') as f:
+#     f.write(requests.get(url_lib).text.encode('utf-8'))
 
-# Importa biblioteca adicional obtida do repositório do github
-from lib import technical_analysis
+# # Importa biblioteca adicional obtida do repositório do github
+# from lib import technical_analysis
 
 def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
     # Prepare data
@@ -42,55 +42,57 @@ def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
 @st.cache_resource
 def load_data():
     # return technical_analysis.daily_analysis_yfinance()
-    return pd.read_csv(models.READ_MARKET_DATA_PATH), None
+    return pd.read_csv(models.READ_MARKET_DATA_PATH)
 
 df = pd.DataFrame()
 with st.status('Loading data...'):
     st.write(f'_**{datetime.datetime.now()}** Lendo dados... Aguarde alguns segundos..._')
-    df, _ = load_data()
+    df = load_data()
     st.write(f'{datetime.datetime.now()} Dados lidos com sucesso: {df.shape[0]} linhas')
 
 if df.shape[0] > 0:
     ticker_sb = st.selectbox(
         'Selecione um código de ativo:',
-        options=sorted(df['ticker'].unique())
+        options=[''] + sorted(df['ticker'].unique())
     )
 
-if ticker_sb:
-    data = df[(df['ticker'] == 'GOLL4')]  # & (df['date'].dt.date >= (datetime.datetime.today() - datetime.timedelta(days=20)).date())]
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=data['date'],
-                open=data['open'],
-                high=data['high'],
-                low=data['low'],
-                close=data['close']
-            )
-        ]
-    )
+    if ticker_sb:
+        st.write(f"Dados para {ticker_sb} atualizados até `{df[df['ticker'] == ticker_sb]['date'].max()}`")
 
-    st.plotly_chart(fig, use_container_width=True)
+# if ticker_sb:
+#     data = df[(df['ticker'] == ticker_sb)]  # & (df['date'].dt.date >= (datetime.datetime.today() - datetime.timedelta(days=20)).date())]
+#     fig = go.Figure(
+#         data=[
+#             go.Candlestick(
+#                 x=data['date'],
+#                 open=data['open'],
+#                 high=data['high'],
+#                 low=data['low'],
+#                 close=data['close']
+#             )
+#         ]
+#     )
 
-components.html(
-    html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV')
-    # height=600
-)
-
-st.markdown(f"### Teste de Tendência")
+#     st.plotly_chart(fig, use_container_width=True)
 
 if ticker_sb:
+    st.markdown(f"### Teste de Tendência")
     r = run_cox_stuart_test(df, ticker=ticker_sb, periods=models.PERIODS_H_TEST)
 
     if r[0][1]:
-        st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]}]`!")
+        st.write(f"Há tendência sgnificativa de alta `[p-value = {r[0][0]} | {models.PERIODS_H_TEST} periods]`!")
     else:
-        st.write(f"Não há tendência sgnificativa de alta `[p-value = {r[0][0]}]`!")
+        st.write(f"Não há tendência sgnificativa de alta `[p-value = {r[0][0]} | {models.PERIODS_H_TEST}]`!")
 
     if r[1][1]:
-        st.write(f"Há tendência sgnificativa de baixa `[p-value = {r[1][0]}]`!")
+        st.write(f"Há tendência sgnificativa de baixa `[p-value = {r[1][0]} | {models.PERIODS_H_TEST}]`!")
     else:
-        st.write(f"Não há tendência sgnificativa de baixa `[p-value = {r[1][0]}]`!")
+        st.write(f"Não há tendência sgnificativa de baixa `[p-value = {r[1][0]} | {models.PERIODS_H_TEST}]`!")
+
+components.html(
+    html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV'),
+    height=600
+)
 
 ################# Adicionando textos e anotações ##############
 # import plotly.graph_objects as go
