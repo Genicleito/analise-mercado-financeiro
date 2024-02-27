@@ -55,13 +55,13 @@ if df.shape[0] > 0:
     col_ticker, col_periods = st.columns(2, gap='medium')
     with col_ticker:
         ticker_sb = st.selectbox(
-            '#### Selecione um código de ativo:',
+            '*Selecione um código de ativo:*',
             options=[''] + sorted(df['ticker'].unique())
         )
     
     with col_periods:
         periods_sb = st.selectbox(
-            '#### Selecione o período para filtrar dados no teste de hipótese:',
+            '*Selecione o período para teste de hipótese:*',
             options=[21, 9, 72, 200]
         )
 
