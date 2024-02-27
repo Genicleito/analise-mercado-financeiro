@@ -91,7 +91,8 @@ if ticker_sb:
 
 components.html(
     html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV'),
-    height=600
+    height=900,
+    width=900
 )
 
 ################# Adicionando textos e anotações ##############

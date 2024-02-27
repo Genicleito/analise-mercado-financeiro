@@ -6,7 +6,7 @@ READ_MARKET_DATA_PATH = 'data/raw/hist_market_trading_yfinance.csv.zip'
 
 # Constantes
 P = 0.05
-PERIODS_H_TEST = 200
+PERIODS_H_TEST = 21
 
 def get_widget_trading_view(ticker, interval='1D'):
     return """<!-- TradingView Widget BEGIN -->
