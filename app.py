@@ -100,7 +100,7 @@ if df.shape[0] > 0:
 
 #     st.plotly_chart(fig, use_container_width=True)
 
-st.write(f"### Gráfico com visualização da série do ativo no TradingView")
+st.write(f"# Gráfico com visualização da série do ativo no TradingView")
 components.html(
     html=models.get_widget_trading_view(ticker=ticker_sb if ticker_sb else 'IBOV'),
     height=400,
