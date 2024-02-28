@@ -12,7 +12,7 @@ TICKERS = set([
     'CCRO3', 'BEEF3', 'MGLU3', 'BBAS3', 'WEGE3', 'CYRE3', 'JHSF3', 'KLBN11', 'SHOW3', 'MRVE3', 'CSAN3', 'NTCO3', 'MDNE3',
     'SAPR11', 'JBSS3', 'BRFS3', 'CSNA3', 'ELET3', 'CMIG4', 'PDGR3', 'LPSB3', 'PRNR3', 'EZTC3', 'ENAT3', 'DMVF3', 'GUAR3',
     'SBSP3', 'RANI3', 'LWSA3', 'SAPR4', 'CAML3', 'GRND3', 'AGRO3', 'CRFB3', 'LAVV3', 'PGMN3', 'SMTO3', 'MYPK3', 'POMO4', 'STBP3', 'PETZ3',
-    'ITSA4', 'PTBL3', 'ENJU3', 'AERI3', 'GMAT3', 'CRFB3', 'RAPT4', 'CXSE3', 'BHIA3', 'PETR3', 'ITUB3', 'OIBR4',
+    'ITSA4', 'PTBL3', 'ENJU3', 'AERI3', 'GMAT3', 'CRFB3', 'RAPT4', 'CXSE3', 'BHIA3', 'PETR3', 'ITUB3', 'OIBR4', 'BBSE3',
 ])
 
 DEFAULT_YAHOO_COLUMNS = ['date', 'ticker', 'open', 'high', 'low', 'close', 'adj_close', 'volume']
@@ -56,6 +56,12 @@ def cox_stuart_test(X, p=0.05, trend_type='d', debug=True):
     
     if debug: print(f"Tempo de execução: {now() - ts}")
     return p_value, p_value < p
+
+def min_values(np_arrays):
+    r = np_arrays[0]
+    for i in range(1, len(np_arrays), 1):
+        r = np.where(r < np_arrays[i], r, np_arrays[i])
+    return r
 
 def get_market_data():
     def create_ema(df, periods=[8, 20, 72, 200]):
@@ -129,6 +135,7 @@ def get_market_data():
                 print(f'{now()} [{ticker}] Error: {exp}')
         return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
     
+    prop_return_risk = 2.5
     dfs = []
     for ticker in tqdm(set(TICKERS)):
         tmp = get_yahoo_finance(tickers=ticker)
@@ -144,10 +151,12 @@ def get_market_data():
                 'crossing_8ema_x_20ema': np.where((tmp['close_ema8'] >= tmp['close_ema20']) & (tmp['close_ema8'].shift(1) < tmp['close_ema20'].shift(1)), 1, 0),
                 'crossing_8ema_x_72ema': np.where((tmp['close_ema8'] >= tmp['close_ema72']) & (tmp['close_ema8'].shift(1) < tmp['close_ema72'].shift(1)), 1, 0),
                 'crossing_20ema_x_72ema': np.where((tmp['close_ema20'] >= tmp['close_ema72']) & (tmp['close_ema20'].shift(1) < tmp['close_ema72'].shift(1)), 1, 0),
-                'trend_tomorrow': np.where((tmp['close'].shift(-1).notna()) & (tmp['close'] < tmp['close'].shift(-1)), 1, 0),
-                'prop_gain_8': (tmp['close'] - tmp['close'].shift(-8)) / tmp['close'],
-                'prop_gain_20': (tmp['close'] - tmp['close'].shift(-20)) / tmp['close'],
-                'prop_gain_72': (tmp['close'] - tmp['close'].shift(-72)) / tmp['close'],
+                'trend_tomorrow_%': (tmp['close'].shift(-1) - tmp['close']) / (tmp['close'].shift(-1)) * 100,
+                'gain_8_%': ((tmp['close'] - tmp['close'].shift(-8)) / tmp['close']) * 100,
+                'gain_20_%': ((tmp['close'] - tmp['close'].shift(-20)) / tmp['close']) * 100,
+                'gain_72_%': ((tmp['close'] - tmp['close'].shift(-72)) / tmp['close']) * 100,
+                'stop_loss': min_values([tmp['low'], tmp['low'].shift(1), tmp['low'].shift(2)]),
+                'stop_gain_suggested': prop_return_risk * (tmp['close'] -  min_values([tmp['low'], tmp['low'].shift(1), tmp['low'].shift(2)])), # 2 * risk
             })
             dfs.append(tmp)
             del(tmp)
@@ -155,18 +164,18 @@ def get_market_data():
     df = pd.concat(dfs, ignore_index=True)
 
     # Cria colunas com base nas informações dos candles
+    candle_length = df['high'] - df['low']
     df = df.assign(
         **{
             'volume_to_average': (df['volume'] / df['volume_ema20']),
             'macd_to_average': (df['macd'] / df['macd_signal']),
-            'candle_lose': df['high'] - df['close'],
-            'candle_gain': df['close'] - df['low'],
-            'candle_length': df['high'] - df['low'],
-            'candle_body': df['close'] - df['open'],
-            'candle_prop_close': 1 - ((df['high'] - df['low']) / df['close']),
-            'price_prop_close': 1 - ((df['close'] - df['open']) / df['close']),
-            'lower_shadow': (np.where(df['open'] < df['close'], df['open'], df['close']) - df['low']) / (df['high'] - df['low']),
-            'upper_shadow': (df['high'] - np.where(df['open'] > df['close'], df['open'], df['close'])) / (df['high'] - df['low']),
+            'candle_lose': (df['high'] - df['close']) / candle_length * 100,
+            'candle_gain': (df['close'] - df['low']) / candle_length * 100,
+            'candle_length': candle_length,
+            'candle_body': (df['close'] - df['open']) / candle_length * 100,
+            'candle_variation_%': ((df['close'] - df['open']) / df['close']) * 100,
+            'lower_shadow_%': ((np.where(df['open'] < df['close'], df['open'], df['close']) - df['low']) / candle_length) * 100,
+            'upper_shadow_%': ((df['high'] - np.where(df['open'] > df['close'], df['open'], df['close'])) / candle_length) * 100,
             'ema8_over_20': df['close_ema8'] - df['close_ema20'],
             'ema8_over_72': df['close_ema8'] - df['close_ema72'],
             'ema20_over_72': df['close_ema20'] - df['close_ema72'],
