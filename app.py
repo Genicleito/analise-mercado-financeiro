@@ -46,16 +46,10 @@ def load_data():
     online_data = False
     try:
         df = utils.get_market_data()
-        print(f"Salvando backup dos dados em: `/tmp/dados.csv`")
-        df.to_csv('/tmp/dados.csv', index=False)
         online_data = True
     except:
-        try:
-            df = pd.read_csv('/tmp/dados.csv')
-            print(f"Dados lidos de caminho de backup: `/tmp/dados.csv`")
-        except:
-            print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
-            df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+        print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
     
     if df.shape[0] == 0:
         print(f'Dados vazios, lendo dados salvos no repositório.')
