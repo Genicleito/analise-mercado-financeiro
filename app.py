@@ -77,7 +77,7 @@ with st.status('Loading data...'):
         'close_ema20': 'Média Móvel (20p)',
         'close_ema72': 'Média Móvel (72p)',
         'close_ema200': 'Média Móvel (200p)',
-    }).query("date <= '2024-02-26'")
+    })# .query("date <= '2024-02-26'")
     st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
 
 if df.shape[0] > 0:
