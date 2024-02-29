@@ -195,6 +195,16 @@ if ticker_sb:
 
     pregoes_predict = 7
     st.markdown(f"## Predição para o próximo pregão")
-    _, _, pred = utils.holt_winters(df_pred, periods_forecast=7, prod=True, debug=True)
+    _, _, pred = utils.holt_winters(df_pred, periods_forecast=pregoes_predict, prod=True, debug=True)
 
     st.metric(label=f"Preço Predito [Erro Médio Absouto = *{round(mae(X_test, Y), 4)}*]:", value=f"R$ {round(pred.iloc[0], 2)}", delta=f"{round((pred.iloc[0] - df_pred['close'].iloc[-1]) / df_pred['close'].iloc[-1] * 100, 2)}%")
+
+    st.markdown(f"## Predição para os próximos {pregoes_predict} pregões")
+    st.dataframe(
+        pd.DataFrame({
+            'Data': [datetime.datetime.today() + datetime.timedelta(days=x) for x in range(1, pregoes_predict + 1)],
+            'Preço predito': pred,
+        }),
+        use_container_width=True,
+        hide_index=True,
+    )
