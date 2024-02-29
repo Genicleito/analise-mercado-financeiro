@@ -4,6 +4,7 @@ import scipy
 import scipy.stats
 import datetime
 from tqdm import tqdm
+import plotly.graph_objects as go
 
 TICKERS = set([
     'CEAB3', 'OIBR3', 'EMBR3', 'VALE3', 'GOLL4', 'COGN3', 'IRBR3', 'ABEV3', 'BBDC4', 'VULC3', 'SUZB3', 'AZUL4', 'QUAL3', 'SEER3',
@@ -189,3 +190,160 @@ def get_market_data():
                 | ((df['ema20_over_72'] > 0) & (df['ema20_over_72'].shift(1) <= 0))
         )
     })
+
+def holt_winters(df_ticker, periods_forecast=20, seasonal_periods=25, seasonal='mul', debug=True): # mul or add
+    from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
+    X = df_ticker['close']
+    X_train = X[:len(X) - periods_forecast]
+    X_test = X[-periods_forecast: ]
+
+    if debug: print(f"X train: {len(X_train)} | X test: {len(X_test)}")
+    
+    # Model training (Multiplicativo)
+    model = ExponentialSmoothing(
+        X_train,
+        trend=seasonal, seasonal=seasonal,
+        seasonal_periods=seasonal_periods
+    ).fit()
+
+    # Prediction
+    Y = model.forecast(periods_forecast)
+
+    return X_train, X_test, Y
+
+def plot_serie(df_ticker, column='close'):
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            y=df_ticker[column],
+            mode='lines',
+            name='Preço de Fechamento',
+            line = dict(width=2.5)
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            y=df_ticker['Média Móvel (8p)'],
+            mode='lines',
+            name='Média Móvel (8p)',
+            line = dict(color='#cc66cc', width=1.25) # , dash='dash')
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            y=df_ticker['Média Móvel (20p)'],
+            mode='lines',
+            name='Média Móvel (20p)',
+            line = dict(color='#000000', width=1.25) # , dash='dash')
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            y=df_ticker['Média Móvel (72p)'],
+            mode='lines',
+            name='Média Móvel (72p)',
+            line = dict(color='#99994d', width=1.25) # , dash='dash')
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            y=df_ticker['Média Móvel (200p)'],
+            mode='lines',
+            name='Média Móvel (200p)',
+            line = dict(color='#5c5c8a', width=1.25) # , dash='dash')
+        )
+    )
+
+    fig.update_layout(
+        title=f"Últimos {df_ticker.shape[0]} pregões na Bolsa de Valores da ação {df_ticker['ticker'].iloc[0]} [Último registro: {df_ticker['date'].max()}]",
+        xaxis_title="Períodos (dias)",
+        yaxis_title="Preço de fechamento (R$)",
+        legend_title="Série e médias móveis",
+        # font=dict(
+        #     family="Courier New, monospace",
+        #     size=18,
+        #     color="RebeccaPurple"
+        # )
+    )
+
+    annotations = []
+    annotations.append(
+        dict(
+            xref='paper', yref='paper', x=0.9, y=-0.1,
+            xanchor='center', yanchor='top', text=f"Último registro: {df_ticker['date'].max()}",
+            # font=dict(
+            #     family='Arial',
+            #     size=12,
+            #     color='rgb(150,150,150)'
+            # ),
+            showarrow=False
+        )
+    )
+
+    fig.update_layout(annotations=annotations)
+    return fig
+
+def plot_model_results(df_ticker, X_train, X_test, Y, seasonal='mul'):
+    X = df_ticker['close']
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            y=X_train.tolist() + [None] * (len(X) - len(X_train)),
+            mode='lines',
+            name='Valor de Treinamento',
+            line = dict(width=1.25)
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            y=[None] * len(X_train) + X_test.tolist(),
+            mode='lines',
+            name='Valor Real',
+            line = dict(color='#cc66cc', width=1.25) # , dash='dash')
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            y=[None] * len(X_train) + Y.tolist(),
+            mode='lines',
+            name='Valor Predito',
+            line = dict(color='#000000', width=1.25) # , dash='dash')
+        )
+    )
+
+    fig.update_layout(
+        title=f"Predição dos valores de fechamento de {df_ticker['ticker'].iloc[0]} [Holt-Winters {'Aditivo' if seasonal == 'add' else 'Multiplicativo'}]",
+        xaxis_title="Períodos (dias)",
+        yaxis_title="Preço (R$)",
+        legend_title="",
+        # font=dict(
+        #     family="Courier New, monospace",
+        #     size=18,
+        #     color="RebeccaPurple"
+        # )
+    )
+
+    annotations = []
+    annotations.append(
+        dict(
+            xref='paper', yref='paper', x=0.9, y=-0.1,
+            xanchor='center', yanchor='top', text=f"Último registro: {df_ticker['date'].max()}",
+            # font=dict(
+            #     family='Arial',
+            #     size=12,
+            #     color='rgb(150,150,150)'
+            # ),
+            showarrow=False
+        )
+    )
+
+    fig.update_layout(annotations=annotations)
+    return fig

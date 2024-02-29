@@ -1,5 +1,13 @@
+import pandas as pd
+import numpy as np
 import streamlit as st
 import streamlit.components.v1 as components
+
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import mean_absolute_error as mae
+from sklearn.metrics import mean_absolute_percentage_error as mape
+
 import os
 
 @st.cache_data
@@ -62,6 +70,12 @@ with st.status('Loading data...'):
     ts = datetime.datetime.now()
     st.write(f"_{ts.strftime('%Y-%m-%d %H:%M:%S')} Lendo dados... Aguarde alguns instantes..._")
     df, online_data = load_data()
+    df = df.rename(columns={
+        'close_ema8': 'Média Móvel (8p)',
+        'close_ema20': 'Média Móvel (20p)',
+        'close_ema72': 'Média Móvel (72p)',
+        'close_ema200': 'Média Móvel (200p)',
+    }).query("date <= '2024-02-26'")
     st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
 
 if df.shape[0] > 0:
@@ -136,33 +150,43 @@ if ticker_sb:
         df[
             (df['tend_alta_medias'] == True) & (df['date'] == df['date'].max())
         ].drop(
-            ['buy', 'sell', 'tend_alta_medias'], axis=1
+            ['buy', 'sell', 'tend_alta_medias'], axis=1, errors='ignore'
         ).sort_values('date', ascending=False).reset_index(drop=True),
         width=900
     )
 
+    # DataFrame para predição
+    df_pred = df_ticker.iloc[-models.PERIODS_ANT_PREDICTION:]
 
-################# Adicionando textos e anotações ##############
-# import plotly.graph_objects as go
-# import pandas as pd
+    st.markdown(f"# Visualização e Análise da Série")
+    fig = utils.plot_serie(df_pred)
+    st.plotly_chart(fig, use_container_width=True)
 
-# df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv')
+    st.markdown(f"# Modelo de predição `Holt-Winters`")
+    seasonal = 'mul' # mul or add
+    X_train, X_test, Y = utils.holt_winters(df_pred, periods_forecast=models.PERIODS_FORECAST, seasonal_periods=25, seasonal=seasonal, debug=True)
 
-# fig = go.Figure(data=[go.Candlestick(x=df['Date'],
-#                 open=df['AAPL.Open'], high=df['AAPL.High'],
-#                 low=df['AAPL.Low'], close=df['AAPL.Close'])
-#                       ])
+    st.markdown(f"### Resultados do modelo")
+    fig_pred = utils.plot_model_results(df_pred, X_train, X_test, Y, seasonal)
+    st.plotly_chart(fig_pred, use_container_width=True)
+    
+    st.markdown(f"### Validação do Modelo")
+    d = pd.DataFrame({
+        'Medida (Multiplicativo)': ['MSE', 'RMSE', 'MAE', 'MAPE'],
+        'Valor': [mse(X_test, Y), np.sqrt(mse(X_test, Y)), mae(X_test, Y), mape(X_test, Y)],
+    })
 
-# fig.update_layout(
-#     title='The Great Recession',
-#     yaxis_title='AAPL Stock',
-#     shapes = [dict(
-#         x0='2016-12-09', x1='2016-12-09', y0=0, y1=1, xref='x', yref='paper',
-#         line_width=2)],
-#     annotations=[dict(
-#         x='2016-12-09', y=0.05, xref='x', yref='paper',
-#         showarrow=False, xanchor='left', text='Increase Period Begins')]
-# )
+    # DataFrame com as medidas de validação
+    st.dataframe(d, use_container_width=True, hide_index=True) #, width=400)
 
-# fig.show()
-
+    # DataFrame com valores reais e preditos
+    st.dataframe(
+        df_pred[['date', 'close']].sort_values('date', ascending=False).rename(
+            columns={'close': 'Valor Real', 'date': 'Data do Pregão'}
+        ).loc[X_test.index].assign(**{
+            'Valor Predito': Y.to_numpy(),
+            'MAE': (X_test - Y.to_numpy()).abs()
+        }),
+        use_container_width=True,
+        hide_index=True
+    )
