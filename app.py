@@ -202,8 +202,8 @@ if ticker_sb:
     st.markdown(f"## Predição para os próximos {pregoes_predict} pregões")
     st.dataframe(
         pd.DataFrame({
-            'Data': [datetime.datetime.today() + datetime.timedelta(days=x) for x in range(1, pregoes_predict + 1)],
-            'Preço predito': pred,
+            'Data': [(datetime.datetime.today() + datetime.timedelta(days=x)).date() for x in range(1, pregoes_predict + 1)],
+            'Preço predito': pred.round(2),
         }),
         use_container_width=True,
         hide_index=True,
