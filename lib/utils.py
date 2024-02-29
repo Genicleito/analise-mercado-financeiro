@@ -191,14 +191,18 @@ def get_market_data():
         )
     })
 
-def holt_winters(df_ticker, periods_forecast=20, seasonal_periods=25, seasonal='mul', debug=True): # mul or add
+def holt_winters(df_ticker, periods_forecast=20, seasonal_periods=25, seasonal='mul', prod=False, debug=True): # mul or add
     from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
     X = df_ticker['close']
-    X_train = X[:len(X) - periods_forecast]
-    X_test = X[-periods_forecast: ]
+    if not prod:
+        X_train = X[:len(X) - periods_forecast]
+        X_test = X[-periods_forecast: ]
 
-    if debug: print(f"X train: {len(X_train)} | X test: {len(X_test)}")
+        if debug: print(f"X train: {len(X_train)} | X test: {len(X_test)}")
+    else:
+        X_train = X
+        X_test = None
     
     # Model training (Multiplicativo)
     model = ExponentialSmoothing(

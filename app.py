@@ -192,3 +192,9 @@ if ticker_sb:
         use_container_width=True,
         hide_index=True
     )
+
+    pregoes_predict = 7
+    st.markdown(f"## Predição para o próximo período")
+    _, _, pred = utils.holt_winters(df_pred, periods_forecast=7, prod=True, debug=True)
+
+    st.metric(label="Preço", value=f"{pred.iloc[0]}", delta=f"{round((pred.iloc[0] - df_pred['close']) / df_pred['close'] * 100, 2)}%")
