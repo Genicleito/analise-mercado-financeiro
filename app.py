@@ -35,7 +35,7 @@ with open(module_file_path, 'wb+') as f:
     f.write(requests.get(url_lib).text.encode('utf-8'))
 
 # Importa biblioteca adicional obtida do repositório do GitHub
-sys.path.insert(0, module_file_path)
+sys.path.insert(0, lib_path)
 import technical_analysis
 
 def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
