@@ -27,16 +27,16 @@ from lib import (
     models, utils
 )
 
-# os.makedirs(lib_path, exist_ok=True)
-lib_path = models.LIB_PATH
-module_file_path = models.TECHNICAL_ANALYSIS_MODULE_PATH
-url_lib = models.URL_LIB
-with open(module_file_path, 'wb+') as f:
-    f.write(requests.get(url_lib).text.encode('utf-8'))
+# # os.makedirs(lib_path, exist_ok=True)
+# lib_path = models.LIB_PATH
+# module_file_path = models.TECHNICAL_ANALYSIS_MODULE_PATH
+# url_lib = models.URL_LIB
+# with open(module_file_path, 'wb+') as f:
+#     f.write(requests.get(url_lib).text.encode('utf-8'))
 
-# Importa biblioteca adicional obtida do repositório do GitHub
-sys.path.insert(0, lib_path)
-import technical_analysis
+# # Importa biblioteca adicional obtida do repositório do GitHub
+# sys.path.insert(0, lib_path)
+# import technical_analysis
 
 def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
     # Prepare data
