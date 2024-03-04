@@ -293,7 +293,7 @@ def plot_serie(df_ticker, column='close'):
     fig.update_layout(annotations=annotations)
     return fig
 
-def plot_model_results(df_ticker, X_train, X_test, Y, seasonal='mul'):
+def plot_model_results(df_ticker, X_train, X_test, Y, method_name):
     X = df_ticker['close']
     fig = go.Figure()
     fig.add_trace(
@@ -324,7 +324,7 @@ def plot_model_results(df_ticker, X_train, X_test, Y, seasonal='mul'):
     )
 
     fig.update_layout(
-        title=f"Predição dos valores de fechamento de {df_ticker['ticker'].iloc[0]} [Holt-Winters {'Aditivo' if seasonal == 'add' else 'Multiplicativo'}]",
+        title=f"Predição dos valores de fechamento de {df_ticker['ticker'].iloc[0]} [{method_name}]",
         xaxis_title="Períodos (dias)",
         yaxis_title="Preço (R$)",
         legend_title="",
