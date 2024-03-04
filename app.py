@@ -197,7 +197,10 @@ if ticker_sb:
         forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
         y_prophet = forecast['yhat']
         st.markdown(f"### Resultados do modelo")
-        fig_prophet = utils.plot_model_results(df_prophet.rename(columns={'y': 'close'}).assign(ticker=ticker_sb), x_train_prophet['y'], x_test_prophet['y'], y_prophet, "Prophet")
+        fig_prophet = utils.plot_model_results(
+            df_prophet.rename(columns={'y': 'close', 'ds': 'date'}).assign(ticker=ticker_sb),
+            x_train_prophet['y'], x_test_prophet['y'], y_prophet, "Prophet"
+        )
         st.plotly_chart(fig_prophet, use_container_width=True)
         
         st.markdown(f"### Validação do Modelo")
