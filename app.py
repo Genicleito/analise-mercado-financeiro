@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import streamlit.components.v1 as components
+from prophet import Prophet
 
 setattr(pd, "Int64Index", pd.Index)
 setattr(pd, "Float64Index", pd.Index)
@@ -60,10 +61,15 @@ def load_data():
     except:
         print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
         df = pd.read_csv(models.READ_MARKET_DATA_PATH)
-    
+
     if df.shape[0] == 0:
         print(f'Dados vazios, lendo dados salvos no repositório.')
         df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+    
+    # Verifica qual dado é o mais recente
+    if df['date'].max() < pd.read_csv(models.READ_MARKET_DATA_PATH)['date'].max():
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+
     return df, online_data
     
 
@@ -83,7 +89,7 @@ with st.status('Loading data...'):
 if df.shape[0] > 0:
     st.write(f"Dados{' [*offline*]' if not online_data else ''} atualizados até `{df['date'].max()}`")
 
-    st.write(f"# Input de informações")
+    st.write(f"# Selecione um código de ativo para que as demais informações sejam exibidas")
     # Criar duas colunas: uma para o ticker e outra para periodos
     col_ticker, col_periods = st.columns(2, gap='medium')
     with col_ticker:
@@ -163,6 +169,73 @@ if ticker_sb:
     st.markdown(f"# Visualização e Análise da Série")
     fig = utils.plot_serie(df_pred)
     st.plotly_chart(fig, use_container_width=True)
+
+    # st.markdown('---')
+    # st.markdown(f"# Predição com o módulo Prophet")
+
+    # with st.status('Preparando dados e realizando predição...'):
+    #     m = Prophet()
+    #     df_prophet = df_pred[['date', 'close']].rename(columns={'date': 'ds', 'close': 'y'})
+    #     # Fit
+    #     x_train_prophet = df_prophet.iloc[:-models.PERIODS_FORECAST, ]
+    #     x_test_prophet = df_prophet.iloc[-models.PERIODS_FORECAST:, ]
+        
+    #     m.fit(x_train_prophet.round(4).drop_duplicates('y'))
+    #     st.dataframe(x_train_prophet.drop_duplicates('y'))
+    #     # Make future
+    #     future = m.make_future_dataframe(periods=models.PERIODS_FORECAST)
+    #     # Forecast
+    #     forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
+    #     y_prophet = forecast['yhat']
+    #     fig_prophet = m.plot_components(forecast)
+
+    #     st.markdown(f"### Resultados do modelo")
+    #     st.plotly_chart(fig_prophet, use_container_width=True)
+        
+    #     st.markdown(f"### Validação do Modelo")
+    #     d = pd.DataFrame({
+    #         'Medida (Multiplicativo)': ['MSE', 'RMSE', 'MAE', 'MAPE'],
+    #         'Valor': [mse(x_test_prophet, y_prophet), np.sqrt(mse(x_test_prophet, y_prophet)), mae(x_test_prophet, y_prophet), mape(x_test_prophet, y_prophet)],
+    #     })
+        
+    #     # DataFrame com as medidas de validação
+    #     st.dataframe(d, use_container_width=True, hide_index=True) #, width=400)
+
+    #     # DataFrame com valores reais e preditos
+    #     st.dataframe(
+    #         df_pred[['date', 'close']].sort_values('date', ascending=False).rename(
+    #             columns={'close': 'Valor Real', 'date': 'Data do Pregão'}
+    #         ).loc[x_test_prophet.index].assign(**{
+    #             'Valor Predito': y_prophet.to_numpy(),
+    #             'MAE': (x_test_prophet - y_prophet.to_numpy()).abs()
+    #         }),
+    #         use_container_width=True,
+    #         hide_index=True
+    #     )
+
+    #     st.markdown(f"## Predição para o próximo pregão")
+    #     m = Prophet()
+    #     m.fit(df_prophet)
+    #     # Make future
+    #     pregoes_predict = 7
+    #     future = m.make_future_dataframe(periods=pregoes_predict)
+    #     # Forecast
+    #     forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
+    #     y_prophet = forecast['yhat']
+
+    #     st.metric(label=f"Preço Predito [Erro Médio Absouto = *{round(mae(x_test_prophet, y_prophet), 4)}*]:", value=f"R$ {round(y_prophet.iloc[0], 2)}", delta=f"{round((y_prophet.iloc[0] - df_prophet['y'].iloc[-1]) / df_prophet['y'].iloc[-1] * 100, 2)}%")
+
+    #     st.markdown(f"## Predição para os próximos {pregoes_predict} pregões")
+    #     st.dataframe(
+    #         pd.DataFrame({
+    #             'Data': forecast['ds'],
+    #             'Preço predito': y_prophet.round(2),
+    #         }),
+    #         use_container_width=True,
+    #         hide_index=True,
+    #     )
+
+    st.markdown('---') # Fim dos dados do modelo prophet
 
     st.markdown(f"# Modelo de predição `Holt-Winters`")
     seasonal = 'mul' # mul or add
