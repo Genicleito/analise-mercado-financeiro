@@ -35,9 +35,8 @@ with open(module_file_path, 'wb+') as f:
     f.write(requests.get(url_lib).text.encode('utf-8'))
 
 # Importa biblioteca adicional obtida do repositório do github
-# sys.path.insert(0, lib_path)
-import lib
-from lib import technical_analysis
+# sys.path.insert(0, module_file_path)
+import technical_analysis
 
 def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
     # Prepare data
@@ -90,6 +89,18 @@ with st.status('Loading data...'):
         'close_ema200': 'Média Móvel (200p)',
     }).sort_values(['date'])
     st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
+
+# Verifica se os dados foram atualizados a mais de um dia
+if (df['date'].max() - datetime.datetime.today()).days != 0:
+    st.write(f"_{ts.strftime('%Y-%m-%d %H:%M:%S')} Atualizando dados... Aguarde alguns instantes..._")
+    df, online_data = load_data()
+    df = df.rename(columns={
+        'close_ema8': 'Média Móvel (8p)',
+        'close_ema20': 'Média Móvel (20p)',
+        'close_ema72': 'Média Móvel (72p)',
+        'close_ema200': 'Média Móvel (200p)',
+    }).sort_values(['date'])
+
 
 if df.shape[0] > 0:
     st.write(f"Dados{' [*offline*]' if not online_data else ''} atualizados até `{df['date'].max()}`")
