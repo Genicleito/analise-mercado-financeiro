@@ -4,3 +4,4 @@ plotly
 scikit-learn
 tqdm
 statsmodels
+prophet==1.1.3
