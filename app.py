@@ -183,7 +183,7 @@ if ticker_sb:
     st.markdown('---')
     st.markdown(f"# Predição com o módulo Prophet")
 
-    with st.status('Preparando dados e realizando predição...'):
+    with st.status('Preparando dados e realizando predição utilizando `Prophet`...'):
         m = Prophet()
         df_prophet = df_pred[['date', 'close']].rename(columns={'date': 'ds', 'close': 'y'})
         # Fit
@@ -191,14 +191,13 @@ if ticker_sb:
         x_test_prophet = df_prophet.iloc[-models.PERIODS_FORECAST:, ]
         
         m.fit(x_train_prophet.round(4).drop_duplicates('y'))
-        st.dataframe(x_train_prophet.drop_duplicates('y'))
         # Make future
         future = m.make_future_dataframe(periods=models.PERIODS_FORECAST)
         # Forecast
         forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
         y_prophet = forecast['yhat']
         st.markdown(f"### Resultados do modelo")
-        fig_prophet = utils.plot_model_results(df_prophet.rename(columns={'y': 'close'}), x_train_prophet, x_test_prophet, y_prophet, "Prophet")
+        fig_prophet = utils.plot_model_results(df_prophet.rename(columns={'y': 'close'}), x_train_prophet['y'], x_test_prophet['y'], y_prophet, "Prophet")
         st.plotly_chart(fig_prophet, use_container_width=True)
         
         st.markdown(f"### Validação do Modelo")
