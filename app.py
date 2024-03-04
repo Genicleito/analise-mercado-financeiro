@@ -81,7 +81,11 @@ df = pd.DataFrame()
 with st.status('Loading data...'):
     ts = datetime.datetime.now()
     st.write(f"_{ts.strftime('%Y-%m-%d %H:%M:%S')} Lendo dados... Aguarde alguns instantes..._")
-    df, online_data = load_data()
+    if (pd.to_datetime(pd.read_csv(models.READ_MARKET_DATA_PATH)['date']).max() - datetime.datetime.today()).days != 0:
+        df, online_data = load_data()
+    else:
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH).sort_values(['date'])
+        online_data = False
     df = df.rename(columns={
         'close_ema8': 'Média Móvel (8p)',
         'close_ema20': 'Média Móvel (20p)',
