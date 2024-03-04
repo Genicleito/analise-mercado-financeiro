@@ -11,6 +11,7 @@ from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mape
 
+import sys
 import os
 
 @st.cache_data
@@ -26,13 +27,16 @@ from lib import (
     models, utils
 )
 
-# lib_path = models.LIB_PATH
-# url_lib = models.URL_LIB
-# with open(lib_path, 'wb+') as f:
-#     f.write(requests.get(url_lib).text.encode('utf-8'))
+# os.makedirs(lib_path, exist_ok=True)
+lib_path = models.LIB_PATH
+module_file_path = models.TECHNICAL_ANALYSIS_MODULE_PATH
+url_lib = models.URL_LIB
+with open(module_file_path, 'wb+') as f:
+    f.write(requests.get(url_lib).text.encode('utf-8'))
 
-# # Importa biblioteca adicional obtida do repositório do github
-# from lib import technical_analysis
+# Importa biblioteca adicional obtida do repositório do github
+sys.path.append(0, lib_path)
+from lib import technical_analysis
 
 def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
     # Prepare data
