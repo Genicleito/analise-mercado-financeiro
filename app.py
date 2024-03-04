@@ -174,70 +174,70 @@ if ticker_sb:
     fig = utils.plot_serie(df_pred)
     st.plotly_chart(fig, use_container_width=True)
 
-    # st.markdown('---')
-    # st.markdown(f"# Predição com o módulo Prophet")
+    st.markdown('---')
+    st.markdown(f"# Predição com o módulo Prophet")
 
-    # with st.status('Preparando dados e realizando predição...'):
-    #     m = Prophet()
-    #     df_prophet = df_pred[['date', 'close']].rename(columns={'date': 'ds', 'close': 'y'})
-    #     # Fit
-    #     x_train_prophet = df_prophet.iloc[:-models.PERIODS_FORECAST, ]
-    #     x_test_prophet = df_prophet.iloc[-models.PERIODS_FORECAST:, ]
+    with st.status('Preparando dados e realizando predição...'):
+        m = Prophet()
+        df_prophet = df_pred[['date', 'close']].rename(columns={'date': 'ds', 'close': 'y'})
+        # Fit
+        x_train_prophet = df_prophet.iloc[:-models.PERIODS_FORECAST, ]
+        x_test_prophet = df_prophet.iloc[-models.PERIODS_FORECAST:, ]
         
-    #     m.fit(x_train_prophet.round(4).drop_duplicates('y'))
-    #     st.dataframe(x_train_prophet.drop_duplicates('y'))
-    #     # Make future
-    #     future = m.make_future_dataframe(periods=models.PERIODS_FORECAST)
-    #     # Forecast
-    #     forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
-    #     y_prophet = forecast['yhat']
-    #     fig_prophet = m.plot_components(forecast)
+        m.fit(x_train_prophet.round(4).drop_duplicates('y'))
+        st.dataframe(x_train_prophet.drop_duplicates('y'))
+        # Make future
+        future = m.make_future_dataframe(periods=models.PERIODS_FORECAST)
+        # Forecast
+        forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
+        y_prophet = forecast['yhat']
+        fig_prophet = m.plot_components(forecast)
 
-    #     st.markdown(f"### Resultados do modelo")
-    #     st.plotly_chart(fig_prophet, use_container_width=True)
+        st.markdown(f"### Resultados do modelo")
+        st.plotly_chart(fig_prophet, use_container_width=True)
         
-    #     st.markdown(f"### Validação do Modelo")
-    #     d = pd.DataFrame({
-    #         'Medida (Multiplicativo)': ['MSE', 'RMSE', 'MAE', 'MAPE'],
-    #         'Valor': [mse(x_test_prophet, y_prophet), np.sqrt(mse(x_test_prophet, y_prophet)), mae(x_test_prophet, y_prophet), mape(x_test_prophet, y_prophet)],
-    #     })
+        st.markdown(f"### Validação do Modelo")
+        d = pd.DataFrame({
+            'Medida (Multiplicativo)': ['MSE', 'RMSE', 'MAE', 'MAPE'],
+            'Valor': [mse(x_test_prophet, y_prophet), np.sqrt(mse(x_test_prophet, y_prophet)), mae(x_test_prophet, y_prophet), mape(x_test_prophet, y_prophet)],
+        })
         
-    #     # DataFrame com as medidas de validação
-    #     st.dataframe(d, use_container_width=True, hide_index=True) #, width=400)
+        # DataFrame com as medidas de validação
+        st.dataframe(d, use_container_width=True, hide_index=True) #, width=400)
 
-    #     # DataFrame com valores reais e preditos
-    #     st.dataframe(
-    #         df_pred[['date', 'close']].sort_values('date', ascending=False).rename(
-    #             columns={'close': 'Valor Real', 'date': 'Data do Pregão'}
-    #         ).loc[x_test_prophet.index].assign(**{
-    #             'Valor Predito': y_prophet.to_numpy(),
-    #             'MAE': (x_test_prophet - y_prophet.to_numpy()).abs()
-    #         }),
-    #         use_container_width=True,
-    #         hide_index=True
-    #     )
+        # DataFrame com valores reais e preditos
+        st.dataframe(
+            df_pred[['date', 'close']].sort_values('date', ascending=False).rename(
+                columns={'close': 'Valor Real', 'date': 'Data do Pregão'}
+            ).loc[x_test_prophet.index].assign(**{
+                'Valor Predito': y_prophet.to_numpy(),
+                'MAE': (x_test_prophet - y_prophet.to_numpy()).abs()
+            }),
+            use_container_width=True,
+            hide_index=True
+        )
 
-    #     st.markdown(f"## Predição para o próximo pregão")
-    #     m = Prophet()
-    #     m.fit(df_prophet)
-    #     # Make future
-    #     pregoes_predict = 7
-    #     future = m.make_future_dataframe(periods=pregoes_predict)
-    #     # Forecast
-    #     forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
-    #     y_prophet = forecast['yhat']
+        st.markdown(f"## Predição para o próximo pregão")
+        m = Prophet()
+        m.fit(df_prophet)
+        # Make future
+        pregoes_predict = 7
+        future = m.make_future_dataframe(periods=pregoes_predict)
+        # Forecast
+        forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
+        y_prophet = forecast['yhat']
 
-    #     st.metric(label=f"Preço Predito [Erro Médio Absouto = *{round(mae(x_test_prophet, y_prophet), 4)}*]:", value=f"R$ {round(y_prophet.iloc[0], 2)}", delta=f"{round((y_prophet.iloc[0] - df_prophet['y'].iloc[-1]) / df_prophet['y'].iloc[-1] * 100, 2)}%")
+        st.metric(label=f"Preço Predito [Erro Médio Absouto = *{round(mae(x_test_prophet, y_prophet), 4)}*]:", value=f"R$ {round(y_prophet.iloc[0], 2)}", delta=f"{round((y_prophet.iloc[0] - df_prophet['y'].iloc[-1]) / df_prophet['y'].iloc[-1] * 100, 2)}%")
 
-    #     st.markdown(f"## Predição para os próximos {pregoes_predict} pregões")
-    #     st.dataframe(
-    #         pd.DataFrame({
-    #             'Data': forecast['ds'],
-    #             'Preço predito': y_prophet.round(2),
-    #         }),
-    #         use_container_width=True,
-    #         hide_index=True,
-    #     )
+        st.markdown(f"## Predição para os próximos {pregoes_predict} pregões")
+        st.dataframe(
+            pd.DataFrame({
+                'Data': forecast['ds'],
+                'Preço predito': y_prophet.round(2),
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
 
     st.markdown('---') # Fim dos dados do modelo prophet
 
