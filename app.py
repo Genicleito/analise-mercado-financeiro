@@ -34,8 +34,8 @@ url_lib = models.URL_LIB
 with open(module_file_path, 'wb+') as f:
     f.write(requests.get(url_lib).text.encode('utf-8'))
 
-# Importa biblioteca adicional obtida do repositório do github
-# sys.path.insert(0, module_file_path)
+# Importa biblioteca adicional obtida do repositório do GitHub
+sys.path.insert(0, module_file_path)
 import technical_analysis
 
 def run_cox_stuart_test(df, ticker, periods=None): # GOLL4, 21
