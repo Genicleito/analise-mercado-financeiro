@@ -197,9 +197,8 @@ if ticker_sb:
         # Forecast
         forecast = m.predict(future)[['ds', 'yhat', 'yhat_lower', 'yhat_upper']]
         y_prophet = forecast['yhat']
-        fig_prophet = m.plot_components(forecast)
-
         st.markdown(f"### Resultados do modelo")
+        fig_prophet = utils.plot_model_results(df_prophet.rename(columns={'y': 'close'}), x_train_prophet, x_test_prophet, y_prophet, "Prophet")
         st.plotly_chart(fig_prophet, use_container_width=True)
         
         st.markdown(f"### Validação do Modelo")
@@ -249,10 +248,11 @@ if ticker_sb:
 
     st.markdown(f"# Modelo de predição `Holt-Winters`")
     seasonal = 'mul' # mul or add
+    method_name = f"Holt-Winters {'Aditivo' if seasonal == 'add' else 'Multiplicativo'}"
     X_train, X_test, Y = utils.holt_winters(df_pred, periods_forecast=models.PERIODS_FORECAST, seasonal_periods=25, seasonal=seasonal, debug=True)
 
     st.markdown(f"### Resultados do modelo")
-    fig_pred = utils.plot_model_results(df_pred, X_train, X_test, Y, seasonal)
+    fig_pred = utils.plot_model_results(df_pred, X_train, X_test, Y, method_name)
     st.plotly_chart(fig_pred, use_container_width=True)
     
     st.markdown(f"### Validação do Modelo")
