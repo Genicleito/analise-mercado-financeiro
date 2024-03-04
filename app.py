@@ -56,19 +56,19 @@ def load_data():
     # return pd.read_csv(models.READ_MARKET_DATA_PATH)
     online_data = False
     try:
-        df = utils.get_market_data()
+        df = utils.get_market_data().sort_values(['date'])
         online_data = True
     except:
         print(f"[load_data()] Dados não puderam ser baixados!. \n\tLendo arquivos armazenados em:\n\t{models.READ_MARKET_DATA_PATH}")
-        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH).sort_values(['date'])
 
     if df.shape[0] == 0:
         print(f'Dados vazios, lendo dados salvos no repositório.')
-        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH).sort_values(['date'])
     
     # Verifica qual dado é o mais recente
     if df['date'].max() < pd.read_csv(models.READ_MARKET_DATA_PATH)['date'].max():
-        df = pd.read_csv(models.READ_MARKET_DATA_PATH)
+        df = pd.read_csv(models.READ_MARKET_DATA_PATH).sort_values(['date'])
 
     return df, online_data
     
@@ -83,7 +83,7 @@ with st.status('Loading data...'):
         'close_ema20': 'Média Móvel (20p)',
         'close_ema72': 'Média Móvel (72p)',
         'close_ema200': 'Média Móvel (200p)',
-    })# .query("date <= '2024-02-26'")
+    }).sort_values(['date'])
     st.write(f"_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Dados lidos com sucesso em {datetime.datetime.now() - ts} [{len(df['ticker'].unique())} ativos]_")
 
 if df.shape[0] > 0:
