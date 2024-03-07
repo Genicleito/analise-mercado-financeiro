@@ -334,7 +334,7 @@ def plot_model_results(df_ticker, X_train, X_test, Y, method_name):
             y=[None] * len(X_train) + Y.tolist(),
             mode='lines',
             name='Valor Predito',
-            line = dict(color='#000000', width=1.25) # , dash='dash')
+            line = dict(color='#ffd60a', width=1.25) # , dash='dash')
         )
     )
 
