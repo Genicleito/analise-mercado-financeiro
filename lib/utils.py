@@ -85,8 +85,8 @@ def get_market_data():
     def ema(serie, period):
         return serie.ewm(span=period, min_periods=period, adjust=False).mean().round(2)
 
-    def macd(fast_ma, slow_ma, decimal=2):
-        return (fast_ma - slow_ma).round(decimal)
+    def macd(fast_ma, slow_ma):
+        return fast_ma - slow_ma
 
     def flag_volume(df):
         return df.assign(
@@ -134,7 +134,7 @@ def get_market_data():
             except Exception as exp:
                 errors.append(ticker)
                 print(f'{now()} [{ticker}] Error: {exp}')
-        return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
+        return pd.concat(dfs, ignore_index=True).sort_values('date') if dfs else pd.DataFrame()
     
     prop_return_risk = 2.5
     dfs = []
@@ -144,7 +144,11 @@ def get_market_data():
             tmp = tmp.rename(columns={'code': 'ticker'})
             tmp = create_ema(tmp.drop_duplicates(['date', 'ticker']))
             tmp = flag_volume(tmp)
-            tmp['macd'] = macd(fast_ma=tmp['close_ema8'], slow_ma=tmp['close_ema20']).round(2)
+            tmp = tmp.assign(**{
+                'ma26': tmp['close'].rolling(window=26).mean(),
+                'ma12': tmp['close'].rolling(window=12).mean()
+            })
+            tmp['macd'] = macd(fast_ma=tmp['ma26'], slow_ma=tmp['ma12'])
             tmp['macd_signal'] = ema(serie=tmp['macd'], period=20)
             # tmp = get_signals(tmp)
             tmp = tmp.assign(**{
@@ -189,7 +193,7 @@ def get_market_data():
                 | ((df['ema8_over_72'] > 0) & (df['ema8_over_72'].shift(1) <= 0))
                 | ((df['ema20_over_72'] > 0) & (df['ema20_over_72'].shift(1) <= 0))
         )
-    })
+    }).sort_values('date', ascending=False)
 
 def holt_winters(df_ticker, periods_forecast=20, seasonal_periods=25, seasonal='mul', prod=False, debug=True): # mul or add
     from statsmodels.tsa.holtwinters import ExponentialSmoothing
