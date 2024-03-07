@@ -149,7 +149,7 @@ def get_market_data():
                 'ma12': tmp['close'].rolling(window=12).mean()
             })
             tmp['macd'] = macd(fast_ma=tmp['ma26'], slow_ma=tmp['ma12'])
-            tmp['macd_signal'] = ema(serie=tmp['macd'], period=20)
+            tmp['macd_signal'] = ema(serie=tmp['macd'], period=9)
             # tmp = get_signals(tmp)
             tmp = tmp.assign(**{
                 'candle_crossing_ema20': candle_crossing_ema(tmp, period=20),
