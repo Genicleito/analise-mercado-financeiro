@@ -6,7 +6,7 @@ import datetime
 from tqdm import tqdm
 import plotly.graph_objects as go
 
-TICKERS = set([
+TICKERS = list(set([
     'CEAB3', 'OIBR3', 'EMBR3', 'VALE3', 'GOLL4', 'COGN3', 'IRBR3', 'ABEV3', 'BBDC4', 'VULC3', 'SUZB3', 'AZUL4', 'QUAL3', 'SEER3',
     'BMGB4', 'ECOR3', 'TOTS3', 'ITUB4', 'LREN3', 'GGBR4', 'USIM5', 'MRFG3', 'RENT3', 'MOVI3', 'VIVA3', 'ARZZ3', 'ETER3',
     'BRKM5', 'PFRM3', 'SOMA3', 'ABCB4', 'AMAR3', 'ANIM3', 'BPAN4', 'BRPR3', 'PETR4', 'SAPR3', 'MEAL3', 'TEND3', 'CIEL3', 'MILS3',
@@ -14,7 +14,16 @@ TICKERS = set([
     'SAPR11', 'JBSS3', 'BRFS3', 'CSNA3', 'ELET3', 'CMIG4', 'PDGR3', 'LPSB3', 'PRNR3', 'EZTC3', 'ENAT3', 'DMVF3', 'GUAR3',
     'SBSP3', 'RANI3', 'LWSA3', 'SAPR4', 'CAML3', 'GRND3', 'AGRO3', 'CRFB3', 'LAVV3', 'PGMN3', 'SMTO3', 'MYPK3', 'POMO4', 'STBP3', 'PETZ3',
     'ITSA4', 'PTBL3', 'ENJU3', 'AERI3', 'GMAT3', 'CRFB3', 'RAPT4', 'CXSE3', 'BHIA3', 'PETR3', 'ITUB3', 'OIBR4', 'BBSE3',
-])
+]))
+
+CRYPTOS = list(set([
+    'BTC', 'ETH', 'USDT', 'BNB', 'OL', 'XRP', 'USDC', 'ADA', 'DOGE', 'SHIB', 'AVAX', 'TRX', 'DOT', 'LINK', 'MATIC', 'TON', 'UNI', 'PIXEL',
+    'BCH', 'LTC', 'DAI', 'APT', 'ATOM', 'FIL', 'OP', 'TAO', 'IMX', 'STX', 'XLM', 'HBAR', 'CRO', 'INJ', 'KAS', 'OKB', 'VET', 'MNT', 'PEPE',
+    'LDO', 'XMR', 'TIA', 'RNDR', 'ARB', 'AR', 'BEAM', 'BONK', 'BSV', 'ALGO', 'MKR', 'SEI', 'FTM', 'SUI', 'RUNE', 'MEME', 'STRK', 'FLOW',
+    'XEGLD', 'ORDI', 'WIF', 'AAVE', 'FET', 'SAND', 'QNT', 'FLR', 'AXS', 'HNT', 'TUSD', '1000SATS', 'MINA', 'XEC', 'BGB', 'XTZ', 'KCS', 'APE',
+    'SNX', 'AXL', 'CHZ', 'LUNC', 'MANA', 'NEO', 'EOS', 'FLOKI', 'GALA', 'ETHDYDX', 'JASMY', 'AGIX', 'IOTA', 'CFX', 'ROSE', 'AKT', 'GNO',
+    'PYTH', 'KAVA', 'WLD', 'WOO'
+]))
 
 DEFAULT_YAHOO_COLUMNS = ['date', 'ticker', 'open', 'high', 'low', 'close', 'adj_close', 'volume']
 
@@ -83,10 +92,10 @@ def get_market_data():
         return pd.concat(dfs, ignore_index=True)
 
     def ema(serie, period):
-        return serie.ewm(span=period, min_periods=period, adjust=False).mean().round(2)
+        return serie.ewm(span=period, min_periods=period, adjust=False).mean()
 
-    def macd(fast_ma, slow_ma, decimal=2):
-        return (fast_ma - slow_ma).round(decimal)
+    def macd(fast_ma, slow_ma):
+        return fast_ma - slow_ma
 
     def flag_volume(df):
         return df.assign(
@@ -99,15 +108,15 @@ def get_market_data():
     def candle_crossing_ema(df, period):
         return np.where(((df['close'] > df[f'close_ema{period}']) & (df['close'].shift(1) <= df[f'close_ema{period}'].shift(1))), 1, 0)
 
-    def create_yahoo_download_query(code, period1=946695600, debug=False):
+    def create_yahoo_download_query(code, period1=946695600, debug=False, crypto=False):
         now = datetime.datetime.today()
         _YAHOO_API_URL = 'https://query1.finance.yahoo.com/v7/finance/download/'
 
         period2 = int(datetime.datetime(year=now.year, month=now.month, day=now.day, hour=max(now.hour - 1, 0), minute=0, second=0, microsecond=0).timestamp())
         # if _DEBUG: print(f'Period1: {datetime.datetime.fromtimestamp(period1)} | Period2: {datetime.datetime.fromtimestamp(period2)}')
-        query = f'{_YAHOO_API_URL}{code}.SA?period1={period1}&period2={period2}&interval=1d&events=history'
-        if debug: print(f"Query: {query}")
-        return query
+        url = f'{yahoo_api_url}{code}{".SA" if not crypto else "-USD"}?period1={period1}&period2={period2}&interval=1d&events=history'
+        if debug: print(f"Query: {url}")
+        return url
 
     def get_yahoo_finance(tickers):
         dfs = []
@@ -115,7 +124,7 @@ def get_market_data():
         success = []
         errors = []
         for ticker in tickers:
-            url = create_yahoo_download_query(code=ticker)
+            url = create_yahoo_download_query(code=ticker, crypto=ticker in CRYPTOS)
             try:
                 tmp = pd.read_csv(url).assign(ticker=ticker)
                 tmp = tmp.rename(columns={x: x.lower().replace(' ', '_') for x in tmp.columns})[DEFAULT_YAHOO_COLUMNS]
@@ -134,18 +143,22 @@ def get_market_data():
             except Exception as exp:
                 errors.append(ticker)
                 print(f'{now()} [{ticker}] Error: {exp}')
-        return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
+        return pd.concat(dfs, ignore_index=True).sort_values('date') if dfs else pd.DataFrame()
     
     prop_return_risk = 2.5
     dfs = []
-    for ticker in tqdm(set(TICKERS)):
+    for ticker in tqdm(set(TICKERS + CRYPTOS)):
         tmp = get_yahoo_finance(tickers=ticker)
         if tmp.shape[0] > 1:
             tmp = tmp.rename(columns={'code': 'ticker'})
             tmp = create_ema(tmp.drop_duplicates(['date', 'ticker']))
             tmp = flag_volume(tmp)
-            tmp['macd'] = macd(fast_ma=tmp['close_ema8'], slow_ma=tmp['close_ema20']).round(2)
-            tmp['macd_signal'] = ema(serie=tmp['macd'], period=20)
+            tmp = tmp.assign(**{
+                'ma26': tmp['close'].rolling(window=26).mean(),
+                'ma12': tmp['close'].rolling(window=12).mean()
+            })
+            tmp['macd'] = macd(fast_ma=tmp['ma26'], slow_ma=tmp['ma12'])
+            tmp['macd_signal'] = ema(serie=tmp['macd'], period=9)
             # tmp = get_signals(tmp)
             tmp = tmp.assign(**{
                 'candle_crossing_ema20': candle_crossing_ema(tmp, period=20),
@@ -189,7 +202,7 @@ def get_market_data():
                 | ((df['ema8_over_72'] > 0) & (df['ema8_over_72'].shift(1) <= 0))
                 | ((df['ema20_over_72'] > 0) & (df['ema20_over_72'].shift(1) <= 0))
         )
-    })
+    }).sort_values('date', ascending=False)
 
 def holt_winters(df_ticker, periods_forecast=20, seasonal_periods=25, seasonal='mul', prod=False, debug=True): # mul or add
     from statsmodels.tsa.holtwinters import ExponentialSmoothing
