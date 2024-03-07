@@ -126,7 +126,9 @@ def get_market_data():
         for ticker in tickers:
             url = create_yahoo_download_query(code=ticker, crypto=ticker in CRYPTOS)
             try:
-                tmp = pd.read_csv(url).assign(ticker=ticker)
+                tmp = pd.read_csv(url).assign(**{
+                    'ticker': ticker if not ticker in CRYPTOS else f"{ticker}USD"
+                })
                 tmp = tmp.rename(columns={x: x.lower().replace(' ', '_') for x in tmp.columns})[DEFAULT_YAHOO_COLUMNS]
                 tmp = tmp[tmp != 'null'].dropna()
                 tmp = tmp.assign(
