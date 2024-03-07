@@ -20,7 +20,7 @@ CRYPTOS = list(set([
     'BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP', 'USDC', 'ADA', 'DOGE', 'SHIB', 'AVAX', 'TRX', 'DOT', 'LINK', 'MATIC', 'TON', 'UNI', 'PIXEL',
     'BCH', 'LTC', 'DAI', 'APT', 'ATOM', 'FIL', 'OP', 'TAO', 'IMX', 'STX', 'XLM', 'HBAR', 'CRO', 'INJ', 'KAS', 'OKB', 'VET', 'MNT', 'PEPE',
     'LDO', 'XMR', 'TIA', 'RNDR', 'ARB', 'AR', 'BEAM', 'BONK', 'BSV', 'ALGO', 'MKR', 'SEI', 'FTM', 'SUI', 'RUNE', 'MEME', 'STRK', 'FLOW',
-    'XEGLD', 'ORDI', 'WIF', 'AAVE', 'FET', 'SAND', 'QNT', 'FLR', 'AXS', 'HNT', 'TUSD', '1000SATS', 'MINA', 'XEC', 'BGB', 'XTZ', 'KCS', 'APE',
+    'XEGLD', 'ORDI', 'WIF', 'AAVE', 'FET', 'SAND', 'QNT', 'FLR', 'AXS', 'HNT', 'TUSD', 'MINA', 'XEC', 'BGB', 'XTZ', 'KCS', 'APE',
     'SNX', 'AXL', 'CHZ', 'LUNC', 'MANA', 'NEO', 'EOS', 'FLOKI', 'GALA', 'ETHDYDX', 'JASMY', 'AGIX', 'IOTA', 'CFX', 'ROSE', 'AKT', 'GNO',
     'PYTH', 'KAVA', 'WLD', 'WOO'
 ]))
