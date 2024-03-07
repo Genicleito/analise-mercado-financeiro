@@ -257,7 +257,7 @@ def plot_serie(df_ticker, column='close'):
             y=df_ticker['Média Móvel (20p)'],
             mode='lines',
             name='Média Móvel (20p)',
-            line = dict(color='#000000', width=1.25) # , dash='dash')
+            line = dict(color='#ffd60a', width=1.25) # , dash='dash')
         )
     )
 

@@ -20,7 +20,7 @@ def get_widget_trading_view(ticker, interval='1D'):
   {
   "symbols": [
     [
-      "BMFBOVESPA:_ticker_|7D"
+      "_bolsa_:_ticker_|7D"
     ]
   ],
   "chartOnly": false,
@@ -64,4 +64,4 @@ def get_widget_trading_view(ticker, interval='1D'):
 }
   </script>
 </div>
-<!-- TradingView Widget END -->""".replace('_ticker_', ticker)
+<!-- TradingView Widget END -->""".replace('_ticker_', ticker).replace('_bolsa_', 'BINANCE' if ticker.endswith('USD') else 'BMFBOVESPA')
