@@ -184,7 +184,6 @@ def get_market_data():
     df = df.assign(
         **{
             'volume_to_average': (df['volume'] / df['volume_ema20']),
-            'macd_to_average': (df['macd'] / df['macd_signal']),
             'candle_lose': (df['high'] - df['close']) / candle_length * 100,
             'candle_gain': (df['close'] - df['low']) / candle_length * 100,
             'candle_length': candle_length,
