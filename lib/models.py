@@ -64,4 +64,4 @@ def get_widget_trading_view(ticker, interval='1D'):
 }
   </script>
 </div>
-<!-- TradingView Widget END -->""".replace('_ticker_', ticker).replace('_bolsa_', 'BINANCE' if ticker.endswith('USD') else 'BMFBOVESPA')
+<!-- TradingView Widget END -->""".replace('_ticker_', ticker).replace('_bolsa_', 'BINANCE' if ticker.endswith('USDT') else 'BMFBOVESPA')
